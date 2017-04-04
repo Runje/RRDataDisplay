@@ -1,0 +1,36 @@
+﻿<Window x:Class="R3E.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:R3E"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="textShared"  Text="Test" Grid.Column="0"></TextBlock>
+        <StackPanel Orientation="Vertical" Grid.Column="1">
+            <Label x:Name="textR3ERunning" Content="R3E is not running" Foreground="Red"></Label>
+            <Label x:Name="textR3eSending" Content="Not sending" DockPanel.Dock="Left" Foreground="Red"></Label>
+            <DockPanel>
+                <Label Content="Port"></Label>
+                <TextBox x:Name="textR3EPort" Text="56678" Width="40" DockPanel.Dock="Right" TextChanged="textR3EPort_TextChanged"></TextBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="IPAddress"></Label>
+                <TextBox x:Name="textIp" Width="90" Text="192.168.0.255" DockPanel.Dock="Right" TextChanged="textIp_TextChanged"></TextBox>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Interval in ms"></Label>
+                <TextBox x:Name="textInterval" Width="40" Text="100" DockPanel.Dock="Right" TextChanged="textInterval_TextChanged"></TextBox>
+            </DockPanel>
+            
+            <Label x:Name="textSendError" Content="" Foreground="Red"></Label>
+            <Label x:Name="textMemoryError" Content="" Foreground="Red" ></Label>
+        </StackPanel>
+        
+    </Grid>
+</Window>
