@@ -55,12 +55,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="R3E.cs" />
-    <Compile Include="R3EDriver.cs" />
+    <Compile Include="R3E\R3E.cs" />
+    <Compile Include="R3E\R3EDriver.cs" />
     <Compile Include="R3EMessage.cs" />
     <Compile Include="R3EServer.cs" />
-    <Compile Include="R3EMemoryReader.cs" />
-    <Compile Include="R3EView.cs" />
+    <Compile Include="R3E\R3EMemoryReader.cs" />
+    <Compile Include="R3E\R3EView.cs" />
     <Compile Include="Utilities.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
