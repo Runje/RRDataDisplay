@@ -17,6 +17,7 @@ using R3E.Data;
 using System.Net.Sockets;
 using System.Diagnostics;
 using System.Net;
+using R3E.Model;
 
 namespace R3E
 {
@@ -50,8 +51,12 @@ namespace R3E
                 interval = 100;
             }
 
-            r3eServer = new R3EServer(port, ip, interval, this);
+            
             InitializeComponent();
+            R3EMemoryReader r3EMemoryReader = new R3EMemoryReader(interval);
+            r3eServer = new R3EServer(port, ip, r3EMemoryReader, this);
+            var model = new DataModel();
+            r3EMemoryReader.onRead += (t, s) => model.UpdateFromR3E(s);
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
             textR3EPort.Text = port.ToString();

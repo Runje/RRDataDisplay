@@ -20,14 +20,12 @@ namespace R3E
         private Timer timer;
         private DateTime lastSent;
 
-        public R3EServer(int port, string ip, int interval, R3EView view)
+        public R3EServer(int port, string ip, R3EMemoryReader reader, R3EView view)
         {
             this.ipaddress = ip;
             this.dstPort = port;
             this.view = view;
-            memoryReader = new R3EMemoryReader(interval);
-            
-            
+            memoryReader = reader;
         }
 
         private void connectionCheck(object state)
@@ -44,7 +42,6 @@ namespace R3E
             {
                 view.ShowSending(true);
             }
-
         }
 
         private void onRreRunning(object sender, bool e)
