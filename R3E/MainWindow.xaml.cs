@@ -27,10 +27,10 @@ namespace R3E
     public partial class MainWindow : Window, R3EView
     {
         private R3EServer r3eServer;
-
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public MainWindow()
         {
-            
+            log.Info("START");
             int port = Properties.Settings.Default.port;
             if (!validatePort(port))
             {
@@ -52,9 +52,9 @@ namespace R3E
             }
 
             
-            InitializeComponent();
             R3EMemoryReader r3EMemoryReader = new R3EMemoryReader(interval);
             r3eServer = new R3EServer(port, ip, r3EMemoryReader, this);
+            InitializeComponent();
             var model = new DataModel();
             r3EMemoryReader.onRead += (t, s) => model.UpdateFromR3E(s);
             this.Loaded += MainWindow_Loaded;
