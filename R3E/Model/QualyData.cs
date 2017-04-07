@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace R3E.Model
 {
-    public class QualyData : Data
+    public class QualyData : DisplayData
     {
         /// <summary>
         /// Position in sector 1.

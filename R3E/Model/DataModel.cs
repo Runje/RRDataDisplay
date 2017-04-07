@@ -9,11 +9,39 @@ namespace R3E.Model
 {
     public class DataModel
     {
-        public Data ActualData { get; set; }
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public DisplayData ActualData { get; set; }
+
+        public DataModel()
+        {
+            resetAll();
+        }
+
+        /// <summary>
+        /// Resets all values of ActualData to invalid data.
+        /// </summary>
+        private void resetAll()
+        {
+            ActualData = new DisplayData();
+        }
 
         public void UpdateFromR3E(Shared shared)
         {
+            if (isStartOfNewSession(shared))
+            {
+                log.Debug("Start of new session");
+            }
+        }
 
+        /// <summary>
+        /// Determines if a new session(Training, Qualy, Race) has started.
+        /// </summary>
+        /// <param name="shared"></param>
+        /// <returns></returns>
+        private bool isStartOfNewSession(Shared shared)
+        {
+            // TODO
+            return false;
         }
     }
 }

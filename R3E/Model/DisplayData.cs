@@ -6,8 +6,23 @@ using System.Threading.Tasks;
 
 namespace R3E.Model
 {
-    public class Data
+    public class DisplayData
     {
+        /// <summary>
+        /// Invalid magic number for positive values
+        /// </summary>
+        public const int INVALID_INT = -1;
+
+        /// <summary>
+        /// Invald magic number for floats.
+        /// </summary>
+        public const float INVALID = float.MinValue;
+
+        /// <summary>
+        /// Invald magic number for positive floats.
+        /// </summary>
+        public const float INVALID_POSITIVE = float.MinValue;
+
         /// <summary>
         /// Position( 1 == first place) of player.
         /// </summary>
@@ -71,11 +86,32 @@ namespace R3E.Model
         /// <summary>
         /// Tire usage in percent(1 = 100%) per 1000 m.
         /// </summary>
-        public Tires TireUsePerKM { get; set; }
+        public Tires AverageTireUsePerKM { get; set; }
 
         /// <summary>
         /// Tire usage in percent(1 = 100%) per 1000 m.
         /// </summary>
         public Tires TireUsedLastLap { get; set; }
+
+
+        private const int MaxLapsCount = 200;
+        public DisplayData()
+        {
+            Position = INVALID_INT;
+            CurrentLap = new Lap();
+            PreviousLap = new Lap();
+            PBLap = new Lap();
+            TBLap = new Lap();
+            PreviousLap = new Lap();
+            FastestLap = new Lap();
+            FuelRemainingLaps = INVALID_INT;
+            TiresWear = new Tires();
+            FuelLastLap = INVALID_POSITIVE;
+            FuelAveragePerLap = INVALID_POSITIVE;
+            FuelMaxLap = INVALID_POSITIVE;
+            CompletedLaps = new Lap[MaxLapsCount];
+            AverageTireUsePerKM = new Tires();
+            TireUsedLastLap = new Tires();
+        }
     }
 }

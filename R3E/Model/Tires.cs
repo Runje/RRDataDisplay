@@ -20,5 +20,13 @@ namespace R3E.Model
                 return new Single[] { FrontLeft, FrontRight, RearLeft, RearRight };
             }
         }
+
+        public Tires()
+        {
+            FrontLeft = -1;
+            FrontRight= -1;
+            RearLeft = -1;
+            RearRight = -1;
+        }
     }
 }

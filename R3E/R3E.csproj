@@ -58,7 +58,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\Data.cs" />
+    <Compile Include="Model\DisplayData.cs" />
     <Compile Include="Model\DataModel.cs" />
     <Compile Include="Model\Lap.cs" />
     <Compile Include="Model\QualyData.cs" />

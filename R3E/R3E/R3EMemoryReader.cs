@@ -1,5 +1,6 @@
 ﻿using R3E.Data;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Net.Sockets;
@@ -25,6 +26,9 @@ namespace R3E
         private bool running;
         public EventHandler<Exception> onError;
         public EventHandler<bool> onRreRunning;
+
+        private Queue<Shared> lastShared = new Queue<Shared>();
+        private int MaxLastShared = 100;
 
         public R3EMemoryReader(int interval)
         {
@@ -110,6 +114,11 @@ namespace R3E
                 _data = (Shared)Marshal.PtrToStructure(_handle.AddrOfPinnedObject(), typeof(Shared));
                 _handle.Free();
                 onRead?.Invoke(this, _data);
+                lastShared.Enqueue(_data);
+                if (lastShared.Count > MaxLastShared)
+                {
+                    lastShared.Dequeue();
+                }
                 return true;
             }
             catch (Exception e)

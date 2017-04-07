@@ -16,6 +16,11 @@ namespace R3E.Model
         {
             get
             {
+                if (AbsSector2 == DisplayData.INVALID_POSITIVE)
+                {
+                    return DisplayData.INVALID_POSITIVE;
+                }
+
                 return AbsSector2 - Sector1;
             }
         }
@@ -24,6 +29,11 @@ namespace R3E.Model
         {
             get
             {
+                if (Time == DisplayData.INVALID_POSITIVE)
+                {
+                    return DisplayData.INVALID_POSITIVE;
+                }
+
                 return Time - AbsSector2;
             }
         }
@@ -34,6 +44,13 @@ namespace R3E.Model
             {
                 return new Single[] { Sector1, RelSector2, RelSector3, Time };
             }
+        }
+
+        public Lap()
+        {
+            Sector1 = DisplayData.INVALID_POSITIVE;
+            AbsSector2 = DisplayData.INVALID_POSITIVE;
+            Time = DisplayData.INVALID_POSITIVE;
         }
 
 
