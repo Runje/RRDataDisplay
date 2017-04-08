@@ -7,43 +7,27 @@ namespace R3E
     {
         public const string SharedMemoryName = "$R3E";
 
-        enum VersionMajor
+        public enum VersionMajor
         {
             // Major version number to test against
             R3E_VERSION_MAJOR = 1
         };
 
-        enum VersionMinor
+        public enum VersionMinor
         {
             // Minor version number to test against
             R3E_VERSION_MINOR = 5
         };
 
-        enum Session
+        public enum Session
         {
-            // N/A
             Unavailable = -1,
-
-            // Still on track, not finished
-            None = 0,
-
-            // Finished session normally
-            Finished = 1,
-
-            // Did not finish
-            DNF = 2,
-
-            // Did not qualify
-            DNQ = 3,
-
-            // Did not start
-            DNS = 4,
-
-            // Disqualified
-            DQ = 5,
+            Practice = 0,
+            Qualify = 1,
+            Race = 2
         };
 
-        enum SessionLengthFormat
+        public enum SessionLengthFormat
         {
             // N/A
             Unavailable = -1,
@@ -56,7 +40,7 @@ namespace R3E
             TimeAndLapBased = 2
         };
 
-    enum SessionPhase
+    public enum SessionPhase
         {
             Unavailable = -1,
 
@@ -79,7 +63,7 @@ namespace R3E
             Checkered = 6,
         };
 
-        enum Control
+        public enum Control
         {
             Unavailable = -1,
 
@@ -96,7 +80,7 @@ namespace R3E
             Replay = 3,
         };
 
-        enum PitWindow
+        public enum PitWindow
         {
             Unavailable = -1,
 
@@ -116,7 +100,7 @@ namespace R3E
             Completed = 4,
         };
 
-        enum PitStopStatus
+        public enum PitStopStatus
         {
             // No mandatory pitstops
             Unavailable = -1,
@@ -128,7 +112,7 @@ namespace R3E
             Served = 1,
         };
 
-        enum FinishStatus
+        public enum FinishStatus
         {
             // N/A
             Unavailable = -1,
@@ -152,7 +136,7 @@ namespace R3E
             DQ = 5,
         };
 
-        enum TireType
+        public enum TireType
         {
             Unavailable = -1,
             Option = 0,
@@ -413,7 +397,7 @@ namespace R3E
         public struct DriverData
         {
             public DriverInfo DriverInfo;
-            // Note: See the R3E.Constant.FinishStatus enum
+            // Note: See the R3E.Constant.FinishStatus public enum
             public Int32 FinishStatus;
             public Int32 Place;
             public Single LapDistance;
@@ -427,13 +411,13 @@ namespace R3E
             public Sectors<Single> SectorTimeBestSelf;
             public Single TimeDeltaFront;
             public Single TimeDeltaBehind;
-            // Note: See the R3E.Constant.PitStopStatus enum
+            // Note: See the R3E.Constant.PitStopStatus public enum
             public Int32 PitStopStatus;
             public Int32 InPitlane;
             public Int32 NumPitstops;
             public CutTrackPenalties Penalties;
             public Single CarSpeed;
-            // Note: See the R3E.Constant.TireType enum
+            // Note: See the R3E.Constant.TireType public enum
             public Int32 TireType;
         }
 
@@ -482,7 +466,7 @@ namespace R3E
             public Int32 EventIndex;
 
             // Which session the player is in (practice, qualifying, race, etc.)
-            // Note: See the R3E.Constant.Session enum
+            // Note: See the R3E.Constant.Session public enum
             public Int32 SessionType;
 
             // The current iteration of the current type of session (second qualifying session, etc.)
@@ -490,7 +474,7 @@ namespace R3E
             public Int32 SessionIteration;
 
             // Which phase the current session is in (gridwalk, countdown, green flag, etc.)
-            // Note: See the R3E.Constant.SessionPhase enum
+            // Note: See the R3E.Constant.SessionPhase public enum
             public Int32 SessionPhase;
 
             // -1 = no data available
@@ -516,7 +500,7 @@ namespace R3E
             //////////////////////////////////////////////////////////////////////////
 
             // Current status of the pit stop
-            // Note: See the R3E.Constant.PitWindow enum
+            // Note: See the R3E.Constant.PitWindow public enum
             public Int32 PitWindowStatus;
 
             // The minute/lap from which you're obligated to pit (-1 = N/A)
@@ -543,7 +527,7 @@ namespace R3E
             // Current position (1 = first place)
             public Int32 Position;
 
-            // Note: See the R3E.Constant.FinishStatus enum
+            // Note: See the R3E.Constant.FinishStatus public enum
             public Int32 FinishStatus;
 
             // Total number of cut track warnings (-1 = N/A)
@@ -603,7 +587,7 @@ namespace R3E
             //////////////////////////////////////////////////////////////////////////
 
             // Which controller is currently controlling the player's car (AI, player, remote, etc.)
-            // Note: See the R3E.Constant.Control enum
+            // Note: See the R3E.Constant.Control public enum
             public Int32 ControlType;
 
             // Unit: Meter per second (m/s)
@@ -674,7 +658,7 @@ namespace R3E
             //////////////////////////////////////////////////////////////////////////
 
             // Which type of tires the player's car has (option, prime, etc.)
-            // Note: See the R3E.Constant.TireType enum
+            // Note: See the R3E.Constant.TireType public enum
             public Int32 TireType;
 
             // Rotation speed
@@ -728,7 +712,7 @@ namespace R3E
             public ExtendedFlags2 ExtendedFlags2;
 
             // If the session is time based, lap based or time based with an extra lap at the end
-            // Note: See the R3E.Constant.SessionLengthFormat enum
+            // Note: See the R3E.Constant.SessionLengthFormat public enum
             public Int32 SessionLengthFormat;
 
             //////////////////////////////////////////////////////////////////////////
