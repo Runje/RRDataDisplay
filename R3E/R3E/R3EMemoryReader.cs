@@ -12,6 +12,7 @@ namespace R3E
     public class R3EMemoryReader : IDisposable
     {
         public EventHandler<Shared> onRead;
+        private object sharedLock = new object();
         private bool Mapped
         {
             get { return (_file != null); }
@@ -27,7 +28,7 @@ namespace R3E
         public EventHandler<Exception> onError;
         public EventHandler<bool> onRreRunning;
 
-        private Queue<Shared> lastShared = new Queue<Shared>();
+        private Queue<byte[]> lastShared = new Queue<byte[]>();
         private int MaxLastShared = 100;
 
         public R3EMemoryReader(int interval)
@@ -108,23 +109,88 @@ namespace R3E
             {
                 var _view = _file.CreateViewStream();
                 BinaryReader _stream = new BinaryReader(_view);
-                _buffer = _stream.ReadBytes(Marshal.SizeOf(typeof(Shared)));
-                
-                GCHandle _handle = GCHandle.Alloc(_buffer, GCHandleType.Pinned);
-                _data = (Shared)Marshal.PtrToStructure(_handle.AddrOfPinnedObject(), typeof(Shared));
-                _handle.Free();
+                _data = bytesToShared(_stream.ReadBytes(Marshal.SizeOf(typeof(Shared))));
                 onRead?.Invoke(this, _data);
-                lastShared.Enqueue(_data);
-                if (lastShared.Count > MaxLastShared)
+                lock (sharedLock)
                 {
-                    lastShared.Dequeue();
+                    lastShared.Enqueue(_buffer);
+                    if (lastShared.Count > MaxLastShared)
+                    {
+                        lastShared.Dequeue();
+                    }
                 }
+
                 return true;
             }
             catch (Exception e)
             {
                 onError?.Invoke(this, e);
                 return false;
+            }
+        }
+
+        private Shared bytesToShared(byte[] bytes)
+        {
+            GCHandle _handle = GCHandle.Alloc(_buffer, GCHandleType.Pinned);
+            Shared shared = (Shared)Marshal.PtrToStructure(_handle.AddrOfPinnedObject(), typeof(Shared));
+            _handle.Free();
+            return shared;
+        }
+
+        public byte[] LastMs(int ms)
+        {
+            short number = (short) Math.Min(ms / TimeInterval.TotalMilliseconds + 1, lastShared.Count);
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (BinaryWriter writer = new BinaryWriter(memoryStream))
+                {
+                    // header information for lap
+                    // version
+                    writer.Write((byte)1);
+
+                    // date
+                    writer.Write(DateTime.Now.ToBinary());
+
+                    // poll time
+                    writer.Write((int) TimeInterval.TotalMilliseconds);
+
+                    // number of shared objects
+                    writer.Write(number);
+
+                    lock (sharedLock)
+                    {
+                        for (int i = 0; i < number; i++)
+                        {
+                            writer.Write(lastShared.Dequeue());
+                        }
+                    }
+
+                }
+
+                return memoryStream.ToArray();
+            }
+        }
+
+        public void Play(byte[] bytes)
+        {
+            // stop reading memory
+            running = false;
+            using (var ms = new MemoryStream(bytes))
+            {
+                using (var reader = new BinaryReader(ms))
+                {
+                    byte version = reader.ReadByte();
+                    DateTime date = new DateTime(reader.ReadInt64());
+                    int pollTime = reader.ReadInt32();
+                    int count = reader.ReadInt32();
+
+                    for (int i = 0; i < count; i++)
+                    {
+                        byte[] sBytes = reader.ReadBytes(Marshal.SizeOf(typeof(Shared)));
+                        Shared shared = bytesToShared(sBytes);
+                        onRead?.Invoke(this, shared);
+                    }
+                }
             }
         }
 

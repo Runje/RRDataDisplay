@@ -62,7 +62,7 @@ namespace R3E.Model
 
             if (isStartOfNewLap())
             {
-                log.Debug("Start of new Lap");
+                log.Debug("Start of new Lap, previous: " + LastShared.LapDistance + ", actual: " + ActualShared.LapDistance);
             }
 
             LastShared = shared;
