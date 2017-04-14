@@ -18,6 +18,9 @@ using System.Net.Sockets;
 using System.Diagnostics;
 using System.Net;
 using R3E.Model;
+using System.IO;
+using Microsoft.Win32;
+
 
 namespace R3E
 {
@@ -28,9 +31,16 @@ namespace R3E
     {
         private R3EServer r3eServer;
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private R3EMemoryReader r3EMemoryReader;
+        private DataModel model;
+        private Dashboard dashboard;
+        private bool playing;
+
         public MainWindow()
         {
             log.Info("START");
+            dashboard = new Dashboard();
+            dashboard.Show();
             int port = Properties.Settings.Default.port;
             if (!validatePort(port))
             {
@@ -52,16 +62,59 @@ namespace R3E
             }
 
             
-            R3EMemoryReader r3EMemoryReader = new R3EMemoryReader(interval);
+            r3EMemoryReader = new R3EMemoryReader(interval);
             r3eServer = new R3EServer(port, ip, r3EMemoryReader, this);
             InitializeComponent();
-            var model = new DataModel();
-            r3EMemoryReader.onRead += (t, s) => model.UpdateFromR3E(s);
+            model = new DataModel();
+            model.OnLapCompleted += onLapCompleted;
+            r3EMemoryReader.onRead += onRead;
+            r3EMemoryReader.onEndTime += onEndTime;
+            r3EMemoryReader.onChangeTime += onChangeTime;
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
             textR3EPort.Text = port.ToString();
             textInterval.Text = interval.ToString();
             textIp.Text = ip;
+
+        }
+
+        private void onRead(object sender, Shared shared)
+        {
+            model.UpdateFromR3E(shared);
+            dashboard.Update(model.ActualData);
+        }
+
+        private void onChangeTime(object sender, double e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                textPlaytime.Content = e.ToString();
+                sliderPlay.Value = e;
+            });
+        }
+
+        private void onEndTime(object sender, double e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                textMaxPlaytime.Content = e.ToString();
+                sliderPlay.Maximum = e;
+            });
+        }
+
+        private void onLapCompleted(object sender, LapInfo lap)
+        {
+            if (!playing)
+            {
+                byte[] bytes = r3EMemoryReader.LastMs((int)(lap.LapTime* 1000));
+
+                string dir = System.IO.Path.Combine(lap.Track, lap.Start.ToString("yy_MM_dd_HH_mm"));
+                Directory.CreateDirectory(dir);
+
+                var filename = System.IO.Path.Combine(dir, lap.Session + lap.LapCount + "_" + lap.LapTime.ToString() + ".lap");
+                File.WriteAllBytes(filename, bytes);
+                log.Info("Wrote file " + filename);
+            }
 
         }
 
@@ -107,6 +160,7 @@ namespace R3E
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             r3eServer.Stop();
+            dashboard.Close();
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -207,6 +261,62 @@ namespace R3E
                 textR3eSending.Content = v ? "Sending" : "Not sending";
                 textR3eSending.Foreground = v ? Brushes.Green : Brushes.Red;
             });
+        }
+
+        private void buttonLoad_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Multiselect = true;
+            openFileDialog.InitialDirectory = Environment.CurrentDirectory;
+            if (openFileDialog.ShowDialog() == true)
+            {
+                
+                new Thread(() =>
+                {
+                    var files = openFileDialog.FileNames;
+                    foreach (var file in files)
+                    {
+                        playing = true;
+                        model.ResetAll();
+                        Dispatcher.Invoke(() =>
+                        {
+                            textFile.Content = file.ToString();
+                        });
+                        byte[] bytes = File.ReadAllBytes(file);
+                        r3EMemoryReader.Play(bytes);
+                    }
+
+                    playing = false;
+                    
+                }).Start();
+            }
+            
+        }
+
+        private void buttonRewind_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void buttonPause_Click(object sender, RoutedEventArgs e)
+        {
+            r3EMemoryReader.Pause();
+        }
+
+        private void buttonPlay_Click(object sender, RoutedEventArgs e)
+        {
+            r3EMemoryReader.Resume();
+        }
+
+        private void buttonForward_Click(object sender, RoutedEventArgs e)
+        {
+            r3EMemoryReader.Forward();
+        }
+
+        private void ButtonSave_Click(object sender, RoutedEventArgs e)
+        {
+            byte[] bytes = r3EMemoryReader.LastMs(600 * 1000);
+            File.WriteAllBytes(DateTime.Now.ToShortDateString(), bytes);
         }
     }
 }

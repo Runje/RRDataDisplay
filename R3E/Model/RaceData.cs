@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace R3E.Model
 {
-    class RaceData
+    public class RaceData : DisplayData
     {
         /// <summary>
         /// Diff to driver ahead.
@@ -32,5 +32,14 @@ namespace R3E.Model
         /// Last Boxenstop delta in seconds.
         /// </summary>
         public Single LastBoxenstopDelta { get; set; }
+
+        public RaceData() : base()
+        {
+            DiffAhead = DisplayData.INVALID;
+            DiffBehind = DisplayData.INVALID;
+            EstimatedRaceLaps = DisplayData.INVALID_INT;
+            EstimatedBoxenstopDelta = DisplayData.INVALID_POSITIVE;
+            LastBoxenstopDelta = DisplayData.INVALID_POSITIVE;
+        }
     }
 }

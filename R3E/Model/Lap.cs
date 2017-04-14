@@ -9,32 +9,32 @@ namespace R3E.Model
     public class Lap
     {
         public Single Sector1 { get; set; }
-        public Single AbsSector2 { get; set; }
-        public Single Time { get; set; }
+        public Single RelSector2 { get; set; }
+        public Single RelSector3 { get; set; }
 
-        public Single RelSector2
+        public Single AbsSector2
         {
             get
             {
-                if (AbsSector2 == DisplayData.INVALID_POSITIVE)
+                if (RelSector2 == DisplayData.INVALID_POSITIVE || Sector1 == DisplayData.INVALID_POSITIVE)
                 {
                     return DisplayData.INVALID_POSITIVE;
                 }
 
-                return AbsSector2 - Sector1;
+                return Sector1 + RelSector2;
             }
         }
 
-        public Single RelSector3
+        public Single Time
         {
             get
             {
-                if (Time == DisplayData.INVALID_POSITIVE)
+                if (RelSector2 == DisplayData.INVALID_POSITIVE || Sector1 == DisplayData.INVALID_POSITIVE || RelSector3 == DisplayData.INVALID_POSITIVE)
                 {
                     return DisplayData.INVALID_POSITIVE;
                 }
 
-                return Time - AbsSector2;
+                return Sector1 + RelSector2 + RelSector3;
             }
         }
 
@@ -49,10 +49,35 @@ namespace R3E.Model
         public Lap()
         {
             Sector1 = DisplayData.INVALID_POSITIVE;
-            AbsSector2 = DisplayData.INVALID_POSITIVE;
-            Time = DisplayData.INVALID_POSITIVE;
+            RelSector2 = DisplayData.INVALID_POSITIVE;
+            RelSector3 = DisplayData.INVALID_POSITIVE;
         }
 
+        public Lap(float absSector1, float relSec2, float relSec3)
+        {
+            this.Sector1 = absSector1;
+            this.RelSector2 = relSec2;
+            this.RelSector3 = relSec3;
+        }
 
+        internal void SetRelSector(int i, float sec)
+        {
+            if (i == 0)
+            {
+                Sector1 = sec;
+            }
+            else if (i == 1)
+            {
+                RelSector2 = sec;
+            }
+            else if (i == 2)
+            {
+                RelSector3 = sec;
+            }
+            else
+            {
+                throw new ArgumentException("Index > 2: " + i);
+            }
+        }
     }
 }

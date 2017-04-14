@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:R3E"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="571.386" Width="525">
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"></ColumnDefinition>
@@ -30,6 +31,33 @@
             
             <Label x:Name="textSendError" Content="" Foreground="Red"></Label>
             <Label x:Name="textMemoryError" Content="" Foreground="Red" ></Label>
+            <Button x:Name="buttonLoad" Content="Load File" Click="buttonLoad_Click" />
+            <Label x:Name="textFile" Content="No File loaded"/>
+            <DockPanel >
+                <Label x:Name="textPlaytime" Width="40" Content="0"/>
+                <Label x:Name="textMaxPlaytime" DockPanel.Dock="Right" Content="-"/>
+                <Slider x:Name="sliderPlay" />
+            </DockPanel>
+            <DockPanel Height="50">
+                <Button x:Name="buttonRewind" Click="buttonRewind_Click">
+                    <Image Source="Images/ic_fast_rewind_black_48dp.png"/>
+                </Button>
+                <Button x:Name="buttonPause" Click="buttonPause_Click">
+                    <Image Source="Images/ic_pause_black_48dp.png"/>
+                </Button>
+                <Button x:Name="buttonPlay" Click="buttonPlay_Click">
+                    <Image Source="Images/ic_play_arrow_black_48dp.png"/>
+                </Button>
+                <Button x:Name="buttonForward" Click="buttonForward_Click">
+                    <Image Source="Images/ic_fast_forward_black_48dp.png"/>
+                </Button>
+            
+            </DockPanel>
+
+            <Button Content="Save" Click="ButtonSave_Click"></Button>
+                
+
+
         </StackPanel>
         
     </Grid>

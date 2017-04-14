@@ -58,9 +58,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Dashboard.xaml.cs">
+      <DependentUpon>Dashboard.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Model\DisplayData.cs" />
     <Compile Include="Model\DataModel.cs" />
     <Compile Include="Model\Lap.cs" />
+    <Compile Include="Model\LapInfo.cs" />
     <Compile Include="Model\QualyData.cs" />
     <Compile Include="Model\RaceData.cs" />
     <Compile Include="Model\Tires.cs" />
@@ -69,8 +73,13 @@
     <Compile Include="R3EMessage.cs" />
     <Compile Include="R3EServer.cs" />
     <Compile Include="R3E\R3EMemoryReader.cs" />
+    <Compile Include="R3E\R3EUtils.cs" />
     <Compile Include="R3E\R3EView.cs" />
     <Compile Include="Utilities.cs" />
+    <Page Include="Dashboard.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -111,6 +120,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ic_fast_forward_black_48dp.png" />
+    <Resource Include="Images\ic_fast_rewind_black_48dp.png" />
+    <Resource Include="Images\ic_pause_black_48dp.png" />
+    <Resource Include="Images\ic_play_arrow_black_48dp.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

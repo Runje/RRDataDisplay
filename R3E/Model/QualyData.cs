@@ -9,23 +9,13 @@ namespace R3E.Model
     public class QualyData : DisplayData
     {
         /// <summary>
-        /// Position in sector 1.
+        /// Current Position in the sectors and a forecast for final position if lap is not completed.
         /// </summary>
-        public int Sector1Pos { get; set; }
+        public int[] SectorPos { get; set; }
 
-        /// <summary>
-        /// Position in sector 2.
-        /// </summary>
-        public int Sector2Pos { get; set; }
-
-        /// <summary>
-        /// Position in sector 3.
-        /// </summary>
-        public int Sector3Pos { get; set; }
-
-        /// <summary>
-        /// Position forecast of current lap.
-        /// </summary>
-        public int ForecastPos { get; set; }
+        public QualyData() : base()
+        {
+            SectorPos = new int[] { DisplayData.INVALID_INT, DisplayData.INVALID_INT, DisplayData.INVALID_INT, DisplayData.INVALID_INT };
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace R3E.Model
         /// <summary>
         /// Invald magic number for positive floats.
         /// </summary>
-        public const float INVALID_POSITIVE = float.MinValue;
+        public const float INVALID_POSITIVE = -1;
 
         /// <summary>
         /// Position( 1 == first place) of player.
@@ -29,9 +29,29 @@ namespace R3E.Model
         public int Position { get; set; }
 
         /// <summary>
+        /// Name of the track.
+        /// </summary>
+        public String Track { get; set; }
+
+        /// <summary>
+        /// Name of the layout.
+        /// </summary>
+        public String Layout { get; set; }
+
+        /// <summary>
+        /// Current running lap time.
+        /// </summary>
+        public Single CurrentTime { get; set; }
+
+        /// <summary>
         /// Current lap time in seconds of player.
         /// </summary>
         public Lap CurrentLap { get; set; }
+
+        /// <summary>
+        /// Whether this sector time in CurrentLap are completed
+        /// </summary>
+        public bool[] CurrentLapCompletedAndValid { get; set; }
 
         /// <summary>
         /// Previous lap time in seconds of player.
@@ -84,6 +104,11 @@ namespace R3E.Model
         public Lap[] CompletedLaps { get; set; }
 
         /// <summary>
+        /// Number of completed laps, can be more than the number of items in CompletedLaps in case of missing data.
+        /// </summary>
+        public int CompletedLapsCount { get; set; }
+
+        /// <summary>
         /// Tire usage in percent(1 = 100%) per 1000 m.
         /// </summary>
         public Tires AverageTireUsePerKM { get; set; }
@@ -93,12 +118,18 @@ namespace R3E.Model
         /// </summary>
         public Tires TireUsedLastLap { get; set; }
 
+        /// <summary>
+        /// Current Sector of the player.
+        /// </summary>
+        public int CurrentSector { get; internal set; }
 
         private const int MaxLapsCount = 200;
         public DisplayData()
         {
             Position = INVALID_INT;
+            CurrentTime = INVALID_POSITIVE;
             CurrentLap = new Lap();
+            CurrentLapCompletedAndValid = new bool[] { false, false, false, false };
             PreviousLap = new Lap();
             PBLap = new Lap();
             TBLap = new Lap();
@@ -112,6 +143,7 @@ namespace R3E.Model
             CompletedLaps = new Lap[MaxLapsCount];
             AverageTireUsePerKM = new Tires();
             TireUsedLastLap = new Tires();
+            CurrentSector = INVALID_INT;
         }
     }
 }

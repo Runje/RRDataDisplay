@@ -11,12 +11,21 @@ namespace R3E
 {
     public class R3EMemoryReader : IDisposable
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public int MaxStoreInSec { get; set; }
         public EventHandler<Shared> onRead;
+        public EventHandler<double> onEndTime;
+        public EventHandler<double> onChangeTime;
         private object sharedLock = new object();
         private bool Mapped
         {
             get { return (_file != null); }
         }
+
+        /// <summary>
+        /// Save so many last shared that the MaxStoreInSec can be saved.
+        /// </summary>
+        public int MaxLastShared { get { return (int) (MaxStoreInSec / TimeInterval.TotalSeconds + 1); } }
 
         private Shared _data;
         private MemoryMappedFile _file;
@@ -29,11 +38,13 @@ namespace R3E
         public EventHandler<bool> onRreRunning;
 
         private Queue<byte[]> lastShared = new Queue<byte[]>();
-        private int MaxLastShared = 100;
+        private bool fastForward;
+        private bool playing;
 
         public R3EMemoryReader(int interval)
         {
             TimeInterval = TimeSpan.FromMilliseconds(interval);
+            MaxStoreInSec = 600;
         }
 
         public void Dispose()
@@ -109,8 +120,9 @@ namespace R3E
             {
                 var _view = _file.CreateViewStream();
                 BinaryReader _stream = new BinaryReader(_view);
-                _data = bytesToShared(_stream.ReadBytes(Marshal.SizeOf(typeof(Shared))));
-                onRead?.Invoke(this, _data);
+                _buffer = _stream.ReadBytes(Marshal.SizeOf(typeof(Shared)));
+                _data = bytesToShared(_buffer);
+                
                 lock (sharedLock)
                 {
                     lastShared.Enqueue(_buffer);
@@ -119,7 +131,7 @@ namespace R3E
                         lastShared.Dequeue();
                     }
                 }
-
+                onRead?.Invoke(this, _data);
                 return true;
             }
             catch (Exception e)
@@ -131,7 +143,7 @@ namespace R3E
 
         private Shared bytesToShared(byte[] bytes)
         {
-            GCHandle _handle = GCHandle.Alloc(_buffer, GCHandleType.Pinned);
+            GCHandle _handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             Shared shared = (Shared)Marshal.PtrToStructure(_handle.AddrOfPinnedObject(), typeof(Shared));
             _handle.Free();
             return shared;
@@ -139,62 +151,99 @@ namespace R3E
 
         public byte[] LastMs(int ms)
         {
-            short number = (short) Math.Min(ms / TimeInterval.TotalMilliseconds + 1, lastShared.Count);
-            using (MemoryStream memoryStream = new MemoryStream())
+            lock (sharedLock)
             {
-                using (BinaryWriter writer = new BinaryWriter(memoryStream))
+                short number = (short)Math.Min(ms / TimeInterval.TotalMilliseconds + 1, lastShared.Count);
+
+                // dismiss all saved shares before:
+                while(lastShared.Count > number)
                 {
-                    // header information for lap
-                    // version
-                    writer.Write((byte)1);
+                    lastShared.Dequeue();
+                }
 
-                    // date
-                    writer.Write(DateTime.Now.ToBinary());
-
-                    // poll time
-                    writer.Write((int) TimeInterval.TotalMilliseconds);
-
-                    // number of shared objects
-                    writer.Write(number);
-
-                    lock (sharedLock)
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    using (BinaryWriter writer = new BinaryWriter(memoryStream))
                     {
+                        // header information for lap
+                        // version
+                        writer.Write((byte)1);
+
+                        // date
+                        writer.Write(DateTime.Now.ToBinary());
+
+                        // poll time
+                        writer.Write((int)TimeInterval.TotalMilliseconds);
+
+                        // number of shared objects
+                        writer.Write(number);
+
+
                         for (int i = 0; i < number; i++)
                         {
                             writer.Write(lastShared.Dequeue());
                         }
+
                     }
 
+                    return memoryStream.ToArray();
                 }
-
-                return memoryStream.ToArray();
             }
         }
 
         public void Play(byte[] bytes)
         {
+            // TODO: make own class R3EMemoryPlayer
             // stop reading memory
             running = false;
+            fastForward = false;
+            log.Info("Playing bytes: " + bytes.Length);
             using (var ms = new MemoryStream(bytes))
             {
                 using (var reader = new BinaryReader(ms))
                 {
                     byte version = reader.ReadByte();
-                    DateTime date = new DateTime(reader.ReadInt64());
+                    DateTime date = DateTime.FromBinary(reader.ReadInt64());
                     int pollTime = reader.ReadInt32();
-                    int count = reader.ReadInt32();
-
+                    short count = reader.ReadInt16();
+                    double endTime = pollTime * count / 1000.0;
+                    onEndTime?.Invoke(this, endTime);
                     for (int i = 0; i < count; i++)
                     {
+                        while(!playing)
+                        {
+                            Thread.Sleep(1);
+                        }
                         byte[] sBytes = reader.ReadBytes(Marshal.SizeOf(typeof(Shared)));
                         Shared shared = bytesToShared(sBytes);
                         onRead?.Invoke(this, shared);
+                        onChangeTime?.Invoke(this, i * pollTime / 1000.0);
+                        if (!fastForward)
+                        {
+                            Thread.Sleep(pollTime);
+                        }
                     }
                 }
             }
+
+            log.Info("Played bytes: " + bytes.Length);
         }
 
-        
+        internal void Resume()
+        {
+            fastForward = false;
+            playing = true;
+        }
+
+        internal void Forward()
+        {
+            fastForward = true;
+        }
+
+        internal void Pause()
+        {
+            playing = false;
+        }
     }
 
     
