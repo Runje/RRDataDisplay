@@ -29,6 +29,11 @@ namespace R3E
             return System.Text.Encoding.UTF8.GetString(bytes, 0, i);
         }
 
+        public static byte[] stringToBytes(string text)
+        {
+            return Encoding.UTF8.GetBytes(text + "\0");
+        }
+
         public static string floatToString(float brakeBias)
         {
             return brakeBias.ToString("0.00");
@@ -41,7 +46,7 @@ namespace R3E
 
         internal static string floatLapToString(float lap)
         {
-            if (lap == DisplayData.INVALID_POSITIVE)
+            if (lap == DisplayData.INVALID)
             {
                 return "-";
             }

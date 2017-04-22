@@ -8,8 +8,11 @@
     <Setting Name="ip" Type="System.String" Scope="User">
       <Value Profile="(Default)">192.168.0.129</Value>
     </Setting>
-    <Setting Name="intervalInMs" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">150</Value>
+    <Setting Name="sendIntervalInMs" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="pollIntervalInMs" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">100</Value>
     </Setting>
   </Settings>
 </SettingsFile>

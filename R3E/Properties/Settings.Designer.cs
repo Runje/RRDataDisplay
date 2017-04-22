@@ -49,13 +49,25 @@ namespace R3E.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("150")]
-        public int intervalInMs {
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int sendIntervalInMs {
             get {
-                return ((int)(this["intervalInMs"]));
+                return ((int)(this["sendIntervalInMs"]));
             }
             set {
-                this["intervalInMs"] = value;
+                this["sendIntervalInMs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int pollIntervalInMs {
+            get {
+                return ((int)(this["pollIntervalInMs"]));
+            }
+            set {
+                this["pollIntervalInMs"] = value;
             }
         }
     }

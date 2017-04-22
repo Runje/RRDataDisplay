@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace R3E.Model
     public class DisplayData
     {
         /// <summary>
-        /// Invalid magic number for positive values
+        /// Invalid magic number for positive int values
         /// </summary>
         public const int INVALID_INT = -1;
 
@@ -101,7 +102,7 @@ namespace R3E.Model
         /// <summary>
         /// Completed Laps in this Session so far.
         /// </summary>
-        public Lap[] CompletedLaps { get; set; }
+        public List<Lap> CompletedLaps { get; set; }
 
         /// <summary>
         /// Number of completed laps, can be more than the number of items in CompletedLaps in case of missing data.
@@ -109,21 +110,25 @@ namespace R3E.Model
         public int CompletedLapsCount { get; set; }
 
         /// <summary>
-        /// Tire usage in percent(1 = 100%) per 1000 m.
+        /// Tire usage in percent(1 = 100%) per lap.
         /// </summary>
-        public Tires AverageTireUsePerKM { get; set; }
+        public Tires TireUsedAveragePerLap { get; set; }
 
         /// <summary>
-        /// Tire usage in percent(1 = 100%) per 1000 m.
+        /// Tire usage in percent(1 = 100%) per lap.
         /// </summary>
         public Tires TireUsedLastLap { get; set; }
+
+        /// <summary>
+        /// Max Tire usage in percent(1 = 100%) per lap.
+        /// </summary>
+        public Tires TireUsedMaxLap { get; set; }
 
         /// <summary>
         /// Current Sector of the player.
         /// </summary>
         public int CurrentSector { get; internal set; }
 
-        private const int MaxLapsCount = 200;
         public DisplayData()
         {
             Position = INVALID_INT;
@@ -140,10 +145,48 @@ namespace R3E.Model
             FuelLastLap = INVALID_POSITIVE;
             FuelAveragePerLap = INVALID_POSITIVE;
             FuelMaxLap = INVALID_POSITIVE;
-            CompletedLaps = new Lap[MaxLapsCount];
-            AverageTireUsePerKM = new Tires();
+            CompletedLaps = new List<Lap>();
+            TireUsedAveragePerLap = new Tires();
             TireUsedLastLap = new Tires();
+            TireUsedMaxLap = new Tires();
             CurrentSector = INVALID_INT;
+        }
+
+        public virtual void Write(BinaryWriter writer)
+        {
+            writer.Write(Position);
+            writer.Write(CurrentTime);
+            CurrentLap.Write(writer);
+            for (int i = 0; i < CurrentLapCompletedAndValid.Length; i++)
+            {
+                writer.Write(CurrentLapCompletedAndValid[i]);
+            }
+            PreviousLap.Write(writer);
+            PBLap.Write(writer);
+            TBLap.Write(writer);
+            FastestLap.Write(writer);
+            writer.Write(FuelRemainingLaps);
+            TiresWear.Write(writer);
+            writer.Write(FuelLastLap);
+            writer.Write(FuelAveragePerLap);
+            writer.Write(FuelMaxLap);
+            writer.Write(CompletedLaps.Count);
+            for (int i = 0; i < CompletedLaps.Count; i++)
+            {
+                CompletedLaps[i].Write(writer);
+            }
+            writer.Write(CompletedLapsCount);
+            TireUsedAveragePerLap.Write(writer);
+            TireUsedLastLap.Write(writer);
+            TireUsedMaxLap.Write(writer);
+            writer.Write(CurrentSector);
+            writer.Write(Utilities.stringToBytes(Track));
+            writer.Write(Utilities.stringToBytes(Layout));
+        }
+
+        public virtual int Length()
+        {
+            return 4 + 8 + 5 * Lap.Length + CurrentLapCompletedAndValid.Length + 4 + 3 * 8 + 4 + CompletedLaps.Count * Lap.Length + 4 + 3 * Tires.Length + 8 + Track.Length + 1 + Layout.Length + 1;
         }
     }
 }

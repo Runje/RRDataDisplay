@@ -1,4 +1,5 @@
 ﻿using R3E.Data;
+using R3E.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,6 +41,7 @@ namespace R3E
         private Queue<byte[]> lastShared = new Queue<byte[]>();
         private bool fastForward;
         private bool playing;
+        private Shared _lastData;
 
         public R3EMemoryReader(int interval)
         {
@@ -84,6 +86,7 @@ namespace R3E
                         timeReset = DateTime.UtcNow;
 
                         _buffer = new Byte[Marshal.SizeOf(typeof(Shared))];
+                        _lastData = new Shared();
                     }
                 }
 
@@ -125,13 +128,17 @@ namespace R3E
                 
                 lock (sharedLock)
                 {
-                    lastShared.Enqueue(_buffer);
-                    if (lastShared.Count > MaxLastShared)
+                    if (!(_data.Player.GameSimulationTime == _lastData.Player.GameSimulationTime || _data.SessionType == DisplayData.INVALID_INT))
                     {
-                        lastShared.Dequeue();
+                        lastShared.Enqueue(_buffer);
+                        if (lastShared.Count > MaxLastShared)
+                        {
+                            lastShared.Dequeue();
+                        }
                     }
                 }
                 onRead?.Invoke(this, _data);
+                _lastData = _data;
                 return true;
             }
             catch (Exception e)

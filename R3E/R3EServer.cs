@@ -8,83 +8,57 @@ using System.IO;
 using System.Net.Sockets;
 using System.Diagnostics;
 using System.Threading;
+using R3E.Model;
 
 namespace R3E
 {
     public class R3EServer
     {
-        private R3EMemoryReader memoryReader;
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public bool IsSending { get; private set; }
         public int dstPort;
         public string ipaddress;
-        private R3EView view;
         private Timer timer;
         private DateTime lastSent;
 
-        public R3EServer(int port, string ip, R3EMemoryReader reader, R3EView view)
+        public R3EServer(int port, string ip)
         {
             this.ipaddress = ip;
             this.dstPort = port;
-            this.view = view;
-            memoryReader = reader;
         }
 
         private void connectionCheck(object state)
         {
             if (lastSent == null)
             {
-                view.ShowSending(false);
+                IsSending = false;
             }
             else if (DateTime.Now.Subtract(lastSent).TotalSeconds >= 1)
             {
-                view.ShowSending(false);
+                IsSending = false;
             }
             else
             {
-                view.ShowSending(true);
+                IsSending = true;
             }
         }
 
-        private void onRreRunning(object sender, bool e)
+        public void SendMessage(DisplayData data)
         {
-            view.ShowRreRunning(e);
-        }
-
-        private void onError(object sender, Exception e)
-        {
-            view.ShowMappingError(e.Message);
-        }
-
-        private void onRead(object sender, Shared shared)
-        {
-            try
-            {
-                sendMessage(shared);
-                lastSent = DateTime.Now;
-            }
-            catch(Exception e)
-            {
-                Debug.WriteLine(e.Message);
-                view.ShowConnectionError(e.Message);
-            }
-
-            view.ShowData(shared);
-        }
-
-        private void sendMessage(Shared shared)
-        {
-            R3EMessage msg = new R3EMessage(shared);
+            short version = 0;
             using (MemoryStream ms = new MemoryStream())
             {
                 using (BinaryWriter bw = new BinaryWriter(ms))
                 {
-                    msg.Write(bw);
+                    bw.Write(version);
+                    data.Write(bw);
                     byte[] bytes = ms.ToArray();
                     using (UdpClient c = new UdpClient())
                     {
                         int sentBytes = c.Send(bytes, bytes.Length, ipaddress, dstPort);
                         if (sentBytes != bytes.Length)
                         {
-                            view.ShowConnectionError("Sent less bytes than expected");
+                            log.Error("Sent less byte than expected");
                         }
                     }
                 }
@@ -93,26 +67,14 @@ namespace R3E
 
         public void Start()
         {
-            memoryReader.onRead += onRead;
-            memoryReader.onError += onError;
-            memoryReader.onRreRunning += onRreRunning;
-            new Thread(() => memoryReader.Run()).Start();
             timer = new Timer(connectionCheck, null, 0, 1000);
         }
 
         public void Stop()
         {
-            memoryReader.onRead -= onRead;
-            memoryReader.onError -= onError;
-            memoryReader.onRreRunning -= onRreRunning;
-            memoryReader.Dispose();
             timer.Dispose();
             timer = null;
         }
 
-        internal void ChangeInterval(int interval)
-        {
-            memoryReader.TimeInterval = TimeSpan.FromMilliseconds(interval);
-        }
     }
 }

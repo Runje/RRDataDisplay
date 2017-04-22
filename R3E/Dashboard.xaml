@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:R3E"
         mc:Ignorable="d"
-        Title="Dashboard" Height="866.747" Width="631.627">
+        WindowStartupLocation="Manual"
+        
+        Title="Dashboard" Height="866.747" Width="1000">
     <Grid>
-        <TextBlock x:Name="textDisplay" FontSize="24"></TextBlock>
+        <TextBlock x:Name="textDisplay" FontSize="24" FontFamily="Courier New"></TextBlock>
     </Grid>
 </Window>
