@@ -49,10 +49,30 @@ namespace R3E.Model
         /// </summary>
         public Lap CurrentLap { get; set; }
 
+        internal byte ToType()
+        {
+            byte type = 0;
+            if (this is QualyData)
+            {
+                type = 1;
+            }
+            else if (this is RaceData)
+            {
+                type = 2;
+            }
+
+            return type;
+        }
+
         /// <summary>
         /// Whether this sector time in CurrentLap are completed
         /// </summary>
-        public bool[] CurrentLapCompletedAndValid { get; set; }
+        public bool[] CurrentLapCompleted { get; set; }
+
+        /// <summary>
+        /// Whether this sector time in CurrentLap are valid
+        /// </summary>
+        public bool[] CurrentLapValid{ get; set; }
 
         /// <summary>
         /// Previous lap time in seconds of player.
@@ -129,12 +149,18 @@ namespace R3E.Model
         /// </summary>
         public int CurrentSector { get; internal set; }
 
+        /// <summary>
+        /// The fraction of the lap.
+        /// </summary>
+        public float LapDistanceFraction { get; set; }
+
         public DisplayData()
         {
             Position = INVALID_INT;
             CurrentTime = INVALID_POSITIVE;
             CurrentLap = new Lap();
-            CurrentLapCompletedAndValid = new bool[] { false, false, false, false };
+            CurrentLapCompleted = new bool[] { false, false, false, false };
+            CurrentLapValid = new bool[] { false, false, false, false };
             PreviousLap = new Lap();
             PBLap = new Lap();
             TBLap = new Lap();
@@ -150,6 +176,7 @@ namespace R3E.Model
             TireUsedLastLap = new Tires();
             TireUsedMaxLap = new Tires();
             CurrentSector = INVALID_INT;
+            LapDistanceFraction = INVALID_POSITIVE;
         }
 
         public virtual void Write(BinaryWriter writer)
@@ -157,9 +184,13 @@ namespace R3E.Model
             writer.Write(Position);
             writer.Write(CurrentTime);
             CurrentLap.Write(writer);
-            for (int i = 0; i < CurrentLapCompletedAndValid.Length; i++)
+            for (int i = 0; i < CurrentLapCompleted.Length; i++)
             {
-                writer.Write(CurrentLapCompletedAndValid[i]);
+                writer.Write(CurrentLapCompleted[i]);
+            }
+            for (int i = 0; i < CurrentLapValid.Length; i++)
+            {
+                writer.Write(CurrentLapValid[i]);
             }
             PreviousLap.Write(writer);
             PBLap.Write(writer);
@@ -182,11 +213,12 @@ namespace R3E.Model
             writer.Write(CurrentSector);
             writer.Write(Utilities.stringToBytes(Track));
             writer.Write(Utilities.stringToBytes(Layout));
+            writer.Write(LapDistanceFraction);
         }
 
         public virtual int Length()
         {
-            return 4 + 8 + 5 * Lap.Length + CurrentLapCompletedAndValid.Length + 4 + 3 * 8 + 4 + CompletedLaps.Count * Lap.Length + 4 + 3 * Tires.Length + 8 + Track.Length + 1 + Layout.Length + 1;
+            return 4 + 8 + 5 * Lap.Length + CurrentLapCompleted.Length + 4 + 3 * 8 + 4 + CompletedLaps.Count * Lap.Length + 4 + 3 * Tires.Length + 8 + Track.Length + 1 + Layout.Length + 1 + 4;
         }
     }
 }

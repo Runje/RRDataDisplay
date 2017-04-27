@@ -19,7 +19,6 @@ namespace R3E.Model
         private R3EView view;
         private Timer timer;
         private DataModel model;
-        private bool playing;
 
         public P1(R3EView view)
         {
@@ -57,9 +56,9 @@ namespace R3E.Model
 
         private void onLapCompleted(object sender, LapInfo lap)
         {
-            if (!playing)
+            if (!memoryReader.playing && lap.LapTime > 0)
             {
-                byte[] bytes = memoryReader.LastMs((int)(lap.LapTime * 1000 + 1000));
+                byte[] bytes = memoryReader.LastMs((int)(lap.LapTime * 1000 + 2000));
 
                 string dir = System.IO.Path.Combine(lap.Track, lap.Start.ToString("yy_MM_dd_HH_mm"));
                 Directory.CreateDirectory(dir);
@@ -108,8 +107,6 @@ namespace R3E.Model
                 log.Error(e.Message);
                 view.ShowConnectionError(e.Message);
             }
-
-            
         }
 
         internal void ChangePollInterval(int interval)
@@ -132,20 +129,15 @@ namespace R3E.Model
 
         internal void PlayFiles(string[] fileNames)
         {
-            new Thread(() =>
-            {
+            // TODO: more than one files, because of new thread!
                 foreach (var file in fileNames)
                 {
-                    playing = true;
                     model.ResetAll();
                     
                     byte[] bytes = File.ReadAllBytes(file);
                     memoryReader.Play(bytes);
                 }
 
-                playing = false;
-
-            }).Start();
         }
 
         internal void Pause()
@@ -167,6 +159,11 @@ namespace R3E.Model
         {
             return memoryReader.LastMs(600 * 1000);
             
+        }
+
+        internal void GoToLiveMode()
+        {
+            memoryReader.GoToLiveMode();
         }
     }
 

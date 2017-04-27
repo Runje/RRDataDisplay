@@ -46,19 +46,29 @@ namespace R3E
         public void SendMessage(DisplayData data)
         {
             short version = 0;
+            byte type = data.ToType();
             using (MemoryStream ms = new MemoryStream())
             {
                 using (BinaryWriter bw = new BinaryWriter(ms))
                 {
                     bw.Write(version);
+                    bw.Write(type);
                     data.Write(bw);
                     byte[] bytes = ms.ToArray();
                     using (UdpClient c = new UdpClient())
                     {
-                        int sentBytes = c.Send(bytes, bytes.Length, ipaddress, dstPort);
-                        if (sentBytes != bytes.Length)
+                        try
                         {
-                            log.Error("Sent less byte than expected");
+                            int sentBytes = c.Send(bytes, bytes.Length, ipaddress, dstPort);
+                            lastSent = DateTime.Now;
+                            if (sentBytes != bytes.Length)
+                            {
+                                log.Error("Sent less byte than expected");
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            log.Error("Error while sending bytes: " + e.Message);
                         }
                     }
                 }

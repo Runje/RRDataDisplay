@@ -63,6 +63,7 @@
     <Compile Include="Dashboard.xaml.cs">
       <DependentUpon>Dashboard.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Database\TB.cs" />
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\DisplayData.cs" />
     <Compile Include="Model\DataModel.cs" />

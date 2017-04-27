@@ -55,6 +55,7 @@
             </DockPanel>
 
             <Button Content="Save" Click="ButtonSave_Click"></Button>
+            <Button Content="Live" Click="ButtonLive_Click"></Button>
                 
 
 

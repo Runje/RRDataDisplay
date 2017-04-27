@@ -103,6 +103,12 @@ namespace R3E.Model
         /// </summary>
         private int IndexTireLastLaps;
         private bool isWarmupLap;
+        private double StartPitting;
+
+        /// <summary>
+        /// Number of PitStops at begin of lap.
+        /// </summary>
+        private int PitStopsBeginLap;
 
         public DataModel()
         {
@@ -115,13 +121,13 @@ namespace R3E.Model
         public void ResetAll()
         {
             ActualData = new DisplayData();
-            
+            LastShared = new Shared();
             IsFirst = true;
             LastShared.TrackSector = DisplayData.INVALID_INT;
             LastShared.SessionType = DisplayData.INVALID_INT;
             FuelLeftBegin = DisplayData.INVALID_POSITIVE;
             TireLeftBegin = new Tires();
-
+            StartPitting = DisplayData.INVALID_INT;
             ResetFuelAndTireAverage();
         }
 
@@ -169,7 +175,7 @@ namespace R3E.Model
                     }
 
 
-                    ActualData.CurrentTime = shared.LapTimeCurrentSelf;
+                    ActualData.CurrentTime = shared.LapTimeCurrentSelf == -1 ? DisplayData.INVALID : shared.LapTimeCurrentSelf;
                     ActualData.CurrentLap = R3EUtils.SectorsToLap(shared.SectorTimesCurrentSelf);
 
                     updateCurrentLap();
@@ -182,6 +188,7 @@ namespace R3E.Model
                     ActualData.CompletedLapsCount = shared.CompletedLaps;
                     ActualData.Track = Utilities.byteToString(ActualShared.TrackName);
                     ActualData.Layout = Utilities.byteToString(ActualShared.LayoutName);
+                    ActualData.LapDistanceFraction = shared.LapDistanceFraction;
 
 
 
@@ -205,7 +212,12 @@ namespace R3E.Model
                         }
                         else
                         {
-
+                            // just after sector1 after pitting
+                            if (PitStopsBeginLap + 1 == ActualShared.NumPitstopsPerformed && ActualShared.TrackSector == 2 && LastShared.TrackSector == 1)
+                            {
+                                calcBoxenstopDelta();
+                                log.Info("Boxenstop delta: " + RaceData.EstimatedBoxenstopDelta);
+                            }
                         }
                     }
 
@@ -224,27 +236,28 @@ namespace R3E.Model
                         TireLeftBegin = new Tires();
                     }
 
+                    if (isInPits())
+                    {
+                        FuelLeftBegin = DisplayData.INVALID_POSITIVE;
+                        TireLeftBegin = new Tires();
+                    }
+
                     if (isStartOfNewLap())
                     {
                         log.Debug("Start of new Lap, previous: " + LastShared.CompletedLaps + ", actual: " + ActualShared.CompletedLaps);
                         isWarmupLap = false;
                         if (ActualShared.LapTimePreviousSelf != DisplayData.INVALID)
                         {
-                            string session = "-";
-                            switch (ActualShared.SessionType)
-                            {
-                                case 0:
-                                    session = "P";
-                                    break;
-                                case 1:
-                                    session = "P";
-                                    break;
-                                case 2:
-                                    session = "R";
-                                    break;
-                            }
+                            string session = GetSessionAbbr();
 
-                            OnLapCompleted?.Invoke(this, new LapInfo(ActualShared.LapTimePreviousSelf, ActualData.CompletedLapsCount, session, ActualData.Track, StartOfEvent));
+                            try
+                            {
+                                OnLapCompleted?.Invoke(this, new LapInfo(ActualShared.LapTimePreviousSelf, ActualData.CompletedLapsCount, session, ActualData.Track, StartOfEvent));
+                            }
+                            catch(Exception e)
+                            {
+                                log.Error("Exception on saving lap: " + e.Message);
+                            }
                         }
 
                         if (!IsFirstSector && FuelMultiplicator > 0)
@@ -256,6 +269,8 @@ namespace R3E.Model
                         {
                             TireCalculation();
                         }
+
+                        PitStopsBeginLap = shared.NumPitstopsPerformed;
                     }
 
                     if (IsRace() && LeaderStartsNewLap())
@@ -267,6 +282,8 @@ namespace R3E.Model
 
                     LastShared = shared;
                     IsFirst = false;
+                    ActualData.PreviousLap = ActualData.CurrentLap;
+                    
                 }
                 catch (Exception e)
                 {
@@ -274,6 +291,53 @@ namespace R3E.Model
                     LastShared = shared;
                 }
             }
+        }
+
+        private void calcBoxenstopDelta()
+        {
+            // sector3 and sector1 diff to pb
+            RaceData.EstimatedBoxenstopDelta = ActualData.PreviousLap.RelSector3 - ActualData.PBLap.RelSector3 + ActualData.CurrentLap.Sector1 - ActualData.PBLap.Sector1;
+        }
+
+        private bool isInPits()
+        {
+            if (ActualShared.InPitlane != 0)
+            {
+                if (StartPitting == DisplayData.INVALID)
+                {
+                    StartPitting = ActualShared.Player.GameSimulationTime;
+                }
+                else if (ActualShared.Player.GameSimulationTime - StartPitting > 3)
+                {
+                    // count as pitting if more than 3 seconds in pitlane, sometimes it happens accidentally for a few tenths.
+                    return true;
+                }
+            }
+            else
+            {
+                StartPitting = DisplayData.INVALID;
+            }
+
+            return false;
+        }
+
+        private String GetSessionAbbr()
+        {
+            string session = "-";
+            switch (ActualShared.SessionType)
+            {
+                case 0:
+                    session = "P";
+                    break;
+                case 1:
+                    session = "P";
+                    break;
+                case 2:
+                    session = "R";
+                    break;
+            }
+
+            return session;
         }
 
         private void ResetFuelAndTireAverage()
@@ -302,7 +366,7 @@ namespace R3E.Model
             {
                 if (ActualData.CurrentSector == 0)
                 {
-                    // in the first sector we need to compare with previous lap
+                    // in the first sector we need to compare with previous lap to show diffs from previous lap
                     RaceData.DiffSectorsAhead = ActualData.CurrentLap - R3EUtils.SectorsToLap(ActualShared.DriverData[ActualShared.Position - 2].SectorTimePreviousSelf);
                 }
                 else
@@ -315,22 +379,33 @@ namespace R3E.Model
                 RaceData.DiffSectorsAhead = new Model.Lap();
             }
 
+            
             if (ActualShared.NumCars > ActualShared.Position && ActualShared.Position > 0)
             {
+                var driverBehind = ActualShared.DriverData[ActualShared.Position];
                 if (ActualData.CurrentSector == 0)
                 {
                     // in the first sector we need to compare with previous lap
-                    RaceData.DiffSectorsBehind = ActualData.CurrentLap - R3EUtils.SectorsToLap(ActualShared.DriverData[ActualShared.Position].SectorTimePreviousSelf);
+                    this.RaceData.DiffSectorsBehind = this.ActualData.CurrentLap - R3EUtils.SectorsToLap(driverBehind.SectorTimePreviousSelf);
+                }
+                else if (IsInSector(driverBehind) != 0)
+                {
+                    this.RaceData.DiffSectorsBehind = this.ActualData.CurrentLap - R3EUtils.SectorsToLap(driverBehind.SectorTimeCurrentSelf);
                 }
                 else
                 {
-                    RaceData.DiffSectorsBehind = ActualData.CurrentLap - R3EUtils.SectorsToLap(ActualShared.DriverData[ActualShared.Position].SectorTimeCurrentSelf);
+                    RaceData.DiffSectorsBehind = new Model.Lap();
                 }
             }
             else
             {
                 RaceData.DiffSectorsBehind = new Model.Lap();
             }
+        }
+
+        private int IsInSector(DriverData driver)
+        {
+            return (driver.TrackSector + 2) % 3;
         }
 
         private bool LeaderStartsNewLap()
@@ -509,7 +584,7 @@ namespace R3E.Model
 
                 float current = currentSec[i];
                 int pos = 1;
-                if (current == DisplayData.INVALID || !ActualData.CurrentLapCompletedAndValid[i])
+                if (current == DisplayData.INVALID || !ActualData.CurrentLapCompleted[i])
                 {
                     // no valid time
                     pos = -1;
@@ -567,23 +642,23 @@ namespace R3E.Model
                 // set last lap as completed, because running time for first sector is not shown.
                 for (int i = 0; i < 4; i++)
                 {
-                    ActualData.CurrentLapCompletedAndValid[i] = true;
+                    ActualData.CurrentLapCompleted[i] = true;
                 }
             }
             else if (ActualData.CurrentSector == 1)
             {
-                ActualData.CurrentLapCompletedAndValid[0] = true;
+                ActualData.CurrentLapCompleted[0] = true;
                 for (int i = 1; i < 4; i++)
                 {
-                    ActualData.CurrentLapCompletedAndValid[i] = false;
+                    ActualData.CurrentLapCompleted[i] = false;
                 }
             }
             else if (ActualData.CurrentSector == 2)
             {
-                ActualData.CurrentLapCompletedAndValid[0] = true;
-                ActualData.CurrentLapCompletedAndValid[1] = true;
-                ActualData.CurrentLapCompletedAndValid[2] = false;
-                ActualData.CurrentLapCompletedAndValid[3] = false;
+                ActualData.CurrentLapCompleted[0] = true;
+                ActualData.CurrentLapCompleted[1] = true;
+                ActualData.CurrentLapCompleted[2] = false;
+                ActualData.CurrentLapCompleted[3] = false;
             }
         }
 
@@ -596,14 +671,14 @@ namespace R3E.Model
                 var tbSec = ActualData.TBLap.RelArray[i];
                 
                 
-                if (this.ActualData.CurrentLapCompletedAndValid[i] && sec != DisplayData.INVALID && (sec < tbSec || tbSec == DisplayData.INVALID))
+                if (this.ActualData.CurrentLapCompleted[i] && sec != DisplayData.INVALID && (sec < tbSec || tbSec == DisplayData.INVALID))
                 {
                     log.Info("New TB in Sector: " + (i + 1));
                     ActualData.TBLap.SetRelSector(i, sec);
                 }
             }
 
-            // from previous lap
+            // from previous lap / from PB
 
         }
 
@@ -613,15 +688,15 @@ namespace R3E.Model
         private void updateCurrentLap()
         {
             // TODO: TrackSector is unreliable, use LapDistance or SectorTimesCurrentSelf!
-            if (ActualData.CurrentSector == 0 && ActualShared.SectorTimesCurrentSelf.AbsSector1 == DisplayData.INVALID)
+            if (ActualData.CurrentSector == 0 && ActualShared.SectorTimesCurrentSelf.AbsSector1 == DisplayData.INVALID_POSITIVE)
             {
                 //ActualData.CurrentLap.Sector1 = ActualShared.LapTimeCurrentSelf;
             }
-            else if (ActualData.CurrentSector == 1 && ActualShared.SectorTimesCurrentSelf.AbsSector2 == DisplayData.INVALID && !IsFirstSector && ActualData.CurrentLap.Sector1 != DisplayData.INVALID)
+            else if (ActualData.CurrentSector == 1 && ActualShared.SectorTimesCurrentSelf.AbsSector2 == DisplayData.INVALID_POSITIVE && !IsFirstSector && ActualData.CurrentLap.Sector1 != DisplayData.INVALID)
             {
                 ActualData.CurrentLap.RelSector2 = ActualShared.LapTimeCurrentSelf - ActualData.CurrentLap.Sector1;
             }
-            else if (ActualData.CurrentSector == 2 && ActualShared.SectorTimesCurrentSelf.AbsSector3 == DisplayData.INVALID && !IsFirstSector && ActualData.CurrentLap.AbsSector2 != DisplayData.INVALID)
+            else if (ActualData.CurrentSector == 2 && ActualShared.SectorTimesCurrentSelf.AbsSector3 == DisplayData.INVALID_POSITIVE && !IsFirstSector && ActualData.CurrentLap.AbsSector2 != DisplayData.INVALID)
             {
                 if (ActualShared.LapTimeCurrentSelf < 5)
                 {

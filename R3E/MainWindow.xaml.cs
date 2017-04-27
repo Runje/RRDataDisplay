@@ -55,11 +55,7 @@ namespace R3E
             p1 = new P1(this);
         }
 
-        private void onRead(object sender, Shared shared)
-        {
-            model.UpdateFromR3E(shared);
-            dashboard.Update(model.ActualData);
-        }
+        
 
         public void onChangeTime(double e)
         {
@@ -231,6 +227,11 @@ namespace R3E
         public void ShowDisplayData(DisplayData actualData)
         {
             dashboard.Update(actualData);
+        }
+
+        private void ButtonLive_Click(object sender, RoutedEventArgs e)
+        {
+            p1.GoToLiveMode();
         }
     }
 }
