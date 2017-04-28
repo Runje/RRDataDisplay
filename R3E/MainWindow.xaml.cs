@@ -31,7 +31,6 @@ namespace R3E
     public partial class MainWindow : Window, R3EView
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private DataModel model;
         private Dashboard dashboard;
         private P1 p1;
 
@@ -55,9 +54,7 @@ namespace R3E
             this.Closing += MainWindow_Closing;
             p1 = new P1(this);
 
-            // TEST DATABASE
-            var schemaUpdate = new SchemaUpdate(NHibernateHelper.Configuration);
-            schemaUpdate.Execute(false, true);
+            
         }
 
         

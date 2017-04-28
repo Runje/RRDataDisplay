@@ -71,7 +71,8 @@ namespace R3E
                 RaceData raceData = actualData as RaceData;
                 sharedText.AppendLine(addTag("Laps") + raceData.CompletedLapsCount + "/" + raceData.EstimatedRaceLaps);
                 sharedText.AppendLine(addTag("Fuel to refill") + raceData.FuelToRefill);
-                sharedText.AppendLine(addTag("BoxenstopDelta") + raceData.EstimatedBoxenstopDelta);
+                sharedText.AppendLine(addTag("EBoxenstopDelta") + raceData.EstimatedBoxenstopDelta);
+                sharedText.AppendLine(addTag("BoxenstopDelta") + raceData.LastBoxenstopDelta);
                 sharedText.AppendLine(addTag("Sector1 Diff") + sectorToString(raceData.DiffSectorsAhead.Sector1) + " " + sectorToString(raceData.DiffSectorsBehind.Sector1));
                 sharedText.AppendLine(addTag("Sector2 Diff") + sectorToString(raceData.DiffSectorsAhead.RelSector2) + " " + sectorToString(raceData.DiffSectorsBehind.RelSector2));
                 sharedText.AppendLine(addTag("Sector3 Diff") + sectorToString(raceData.DiffSectorsAhead.RelSector3) + " " + sectorToString(raceData.DiffSectorsBehind.RelSector3));

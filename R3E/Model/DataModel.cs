@@ -1,4 +1,5 @@
 ﻿using R3E.Data;
+using R3E.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,16 @@ namespace R3E.Model
         /// EventHandler for completed Laps
         /// </summary>
         public EventHandler<LapInfo> OnLapCompleted;
+
+        /// <summary>
+        /// EventHandler for a new session.
+        /// </summary>
+        public EventHandler<SessionInfo> OnNewSession;
+
+        /// <summary>
+        /// EventHandler for a boxenstop delta.
+        /// </summary>
+        public EventHandler<BoxenstopDelta> OnBoxenstopDelta;
 
         /// <summary>
         /// The actual data to display.
@@ -131,6 +142,17 @@ namespace R3E.Model
             ResetFuelAndTireAverage();
         }
 
+        internal void SetBoxenstopDelta(float delta)
+        {
+            lock (dataLock)
+            {
+                if (IsRace())
+                {
+                    RaceData.EstimatedBoxenstopDelta = delta;
+                }
+            }
+        }
+
         public void UpdateFromR3E(Shared shared)
         {
             lock (dataLock)
@@ -145,6 +167,7 @@ namespace R3E.Model
                     }
 
                     ActualShared = shared;
+                    
 
                     if (isStartOfNewSession())
                     {
@@ -169,9 +192,13 @@ namespace R3E.Model
                             ActualData = new QualyData();
                         }
 
+                        ActualData.Track = Utilities.byteToString(ActualShared.TrackName);
+                        ActualData.Layout = Utilities.byteToString(ActualShared.LayoutName);
                         FuelLeftBegin = DisplayData.INVALID_POSITIVE;
                         TireLeftBegin = new Tires();
-                        // TODO: Load TB, Fuel and Tire usage
+                        // TODO: classId? --> carid
+                        OnNewSession?.Invoke(this, new SessionInfo(ActualData.Track, ActualData.Layout, shared.SessionType, shared.VehicleInfo.ClassId));
+                        
                     }
 
 
@@ -186,8 +213,7 @@ namespace R3E.Model
                     ActualData.Position = shared.Position;
                     ActualData.CurrentSector = (shared.TrackSector + 2) % 3;
                     ActualData.CompletedLapsCount = shared.CompletedLaps;
-                    ActualData.Track = Utilities.byteToString(ActualShared.TrackName);
-                    ActualData.Layout = Utilities.byteToString(ActualShared.LayoutName);
+                    
                     ActualData.LapDistanceFraction = shared.LapDistanceFraction;
 
 
@@ -216,7 +242,9 @@ namespace R3E.Model
                             if (PitStopsBeginLap + 1 == ActualShared.NumPitstopsPerformed && ActualShared.TrackSector == 2 && LastShared.TrackSector == 1)
                             {
                                 calcBoxenstopDelta();
-                                log.Info("Boxenstop delta: " + RaceData.EstimatedBoxenstopDelta);
+                                log.Info("Boxenstop delta: " + RaceData.LastBoxenstopDelta);
+                                // TODO: Refill, Tires, ClassId
+                                OnBoxenstopDelta?.Invoke(this, new BoxenstopDelta(ActualData.Track, ActualData.Layout, RaceData.LastBoxenstopDelta, 1, true, true, shared.VehicleInfo.ClassId));
                             }
                         }
                     }
@@ -296,7 +324,7 @@ namespace R3E.Model
         private void calcBoxenstopDelta()
         {
             // sector3 and sector1 diff to pb
-            RaceData.EstimatedBoxenstopDelta = ActualData.PreviousLap.RelSector3 - ActualData.PBLap.RelSector3 + ActualData.CurrentLap.Sector1 - ActualData.PBLap.Sector1;
+            RaceData.LastBoxenstopDelta = ActualData.PreviousLap.RelSector3 - ActualData.PBLap.RelSector3 + ActualData.CurrentLap.Sector1 - ActualData.PBLap.Sector1;
         }
 
         private bool isInPits()

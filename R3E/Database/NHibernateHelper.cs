@@ -48,6 +48,19 @@ namespace R3E.Database
             }
         }
 
+        public static Configuration TestConfiguration
+        {
+            get
+            {
+                if (_configuration == null)
+                {
+                    //Create the nhibernate configuration
+                    _configuration = CreateTestConfiguration();
+                }
+                return _configuration;
+            }
+        }
+
         public static HbmMapping Mapping
         {
             get
@@ -72,11 +85,23 @@ namespace R3E.Database
             return configuration;
         }
 
+        private static Configuration CreateTestConfiguration()
+        {
+            var configuration = new Configuration();
+            //Loads properties from hibernate.cfg.xml
+            configuration.Configure("testhibernate.cfg.xml");
+            //Loads nhibernate mappings 
+            configuration.AddDeserializedMapping(Mapping, null);
+
+            return configuration;
+        }
+
         private static HbmMapping CreateMapping()
         {
             var mapper = new ModelMapper();
             //Add the person mapping to the model mapper
             mapper.AddMappings(new List<System.Type> { typeof(TBMapper) });
+            mapper.AddMappings(new List<System.Type> { typeof(BoxenstopDeltaMapper) });
             //Create and return a HbmMapping of the model mapping in code
             return mapper.CompileMappingForAllExplicitlyAddedEntities();
         }

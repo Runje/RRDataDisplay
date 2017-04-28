@@ -5,13 +5,13 @@ using R3E;
 namespace R3ETests
 {
     [TestClass]
-    public class UnitTest1
+    public class UtilitiesTest
     {
         [TestMethod]
         public void StringBytes()
         {
             const string text = "Monza Circuit";
-            Assert.AreEqual(text, Utilities.byteToString(Utilities.stringToBytes(text)));
+            Assert.AreEqual(text, R3E.Utilities.byteToString(R3E.Utilities.stringToBytes(text)));
         }
     }
 }

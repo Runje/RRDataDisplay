@@ -1,4 +1,5 @@
 ﻿using R3E.Data;
+using R3E.Database;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,10 +20,12 @@ namespace R3E.Model
         private R3EView view;
         private Timer timer;
         private DataModel model;
+        private R3EDatabase database;
 
         public P1(R3EView view)
         {
             this.view = view;
+            this.database = new R3EDatabase();
         }
 
         public void Start()
@@ -30,6 +33,8 @@ namespace R3E.Model
             config.Read();
             model = new DataModel();
             model.OnLapCompleted += onLapCompleted;
+            model.OnNewSession += onNewSession;
+            model.OnBoxenstopDelta += onBoxenstopDelta;
             memoryReader = new R3EMemoryReader(config.PollInterval);
             r3eServer = new R3EServer(config.Port, config.IP);
             memoryReader.onRead += onRead;
@@ -41,6 +46,38 @@ namespace R3E.Model
             new Thread(() => memoryReader.Run()).Start();
             timer = new Timer(sendMessage, null, 0, config.SendInterval);
             view.UpdateConfig(config);
+        }
+
+        private void onBoxenstopDelta(object sender, BoxenstopDelta delta)
+        {
+            if (memoryReader.playing)
+            {
+                return;
+            }
+
+            Task.Factory.StartNew(() =>
+            {
+                database.SaveBoxenstopDelta(delta);
+                log.Info("Saving boxenstop delta: " + delta.Delta);
+            });
+        }
+
+        private void onNewSession(object sender, SessionInfo sessionInfo)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                if (sessionInfo.Session == 2)
+                {
+                    // RACE
+                    float delta = database.GetBoxenstopDelta(sessionInfo.Track, sessionInfo.Layout, sessionInfo.CarId);
+                    if (delta != DisplayData.INVALID)
+                    {
+                        model.SetBoxenstopDelta(delta);
+                    }
+
+                    // TODO: load TB, tire and fuel usage
+                }
+            });
         }
 
         private void onChangeTime(object sender, double e)

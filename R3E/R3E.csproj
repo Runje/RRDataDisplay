@@ -74,7 +74,10 @@
     <Compile Include="Dashboard.xaml.cs">
       <DependentUpon>Dashboard.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Database\BoxenstopDelta.cs" />
+    <Compile Include="Database\BoxenstopDeltaMapper.cs" />
     <Compile Include="Database\NHibernateHelper.cs" />
+    <Compile Include="Database\R3EDatabase.cs" />
     <Compile Include="Database\TB.cs" />
     <Compile Include="Database\TBMapper.cs" />
     <Compile Include="Model\Config.cs" />
@@ -85,6 +88,7 @@
     <Compile Include="Model\P1.cs" />
     <Compile Include="Model\QualyData.cs" />
     <Compile Include="Model\RaceData.cs" />
+    <Compile Include="Model\SessionInfo.cs" />
     <Compile Include="Model\Tires.cs" />
     <Compile Include="R3E\R3E.cs" />
     <Compile Include="R3E\R3EDriver.cs" />
@@ -146,6 +150,9 @@
     <Resource Include="Images\ic_play_arrow_black_48dp.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="testhibernate.cfg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="hibernate.cfg.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
