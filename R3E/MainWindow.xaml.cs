@@ -20,7 +20,8 @@ using System.Net;
 using R3E.Model;
 using System.IO;
 using Microsoft.Win32;
-
+using NHibernate.Tool.hbm2ddl;
+using R3E.Database;
 
 namespace R3E
 {
@@ -53,6 +54,10 @@ namespace R3E
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
             p1 = new P1(this);
+
+            // TEST DATABASE
+            var schemaUpdate = new SchemaUpdate(NHibernateHelper.Configuration);
+            schemaUpdate.Execute(false, true);
         }
 
         

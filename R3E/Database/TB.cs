@@ -9,10 +9,14 @@ namespace R3E.Database
 {
     public class TB
     {
-        public String Track { get; set; }
-        public String Layout { get; set; }
-        public Lap Lap { get; set; }
-        public int Class { get; set; }
-        public int CarId { get; set; }
+        public virtual Guid Id { get; set; }
+        public virtual String Track { get; set; }
+        public virtual String Layout { get; set; }
+        public virtual Lap Lap { get; set; }
+        public virtual int Class { get; set; }
+        public virtual int CarId { get; set; }
+        public virtual Tires TireWear { get; set; }
+        public virtual float Fuel { get; set; }
+
     }
 }
