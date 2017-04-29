@@ -47,7 +47,7 @@ namespace R3E.Database
                 }
             }
 
-            return DisplayData.INVALID;
+            return DisplayData.INVALID_POSITIVE;
         }
     }
 }

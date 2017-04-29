@@ -70,7 +70,7 @@ namespace R3E.Model
                 {
                     // RACE
                     float delta = database.GetBoxenstopDelta(sessionInfo.Track, sessionInfo.Layout, sessionInfo.CarId);
-                    if (delta != DisplayData.INVALID)
+                    if (delta != DisplayData.INVALID_POSITIVE)
                     {
                         model.SetBoxenstopDelta(delta);
                     }

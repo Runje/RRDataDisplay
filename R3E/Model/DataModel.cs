@@ -186,10 +186,12 @@ namespace R3E.Model
                         {
                             ActualData = new RaceData();
                             isWarmupLap = true;
+                            log.Info("RACE");
                         }
                         else
                         {
                             ActualData = new QualyData();
+                            log.Info("NO RACE");
                         }
 
                         ActualData.Track = Utilities.byteToString(ActualShared.TrackName);
@@ -254,6 +256,7 @@ namespace R3E.Model
                         RaceData.DiffAhead = ActualShared.TimeDeltaFront;
                         RaceData.DiffBehind = ActualShared.TimeDeltaBehind;
                         UpdateSectorDiffs();
+                        UpdateStandingsAfterBox();
                     }
 
                     if (isNewStint() && !IsRace())
@@ -317,6 +320,71 @@ namespace R3E.Model
                 {
                     log.Error("Exception: " + e.Message);
                     LastShared = shared;
+                }
+            }
+        }
+
+        private void UpdateStandingsAfterBox()
+        {
+            if (RaceData.EstimatedBoxenstopDelta != DisplayData.INVALID_POSITIVE)
+            {
+                RaceData.EstimatedStandings = new List<StandingsDriver>();
+                float deltaToLeader = 0;
+                StandingsDriver me = null;
+                for (int i = 0; i < ActualShared.NumCars; i++)
+                {
+                    DriverData driver = ActualShared.DriverData[i];
+                    int currPos = me == null ? i + 1 : i;
+                    if (i == 0)
+                    {
+                        // first position
+                        
+                        if (i + 1 == ActualData.Position)
+                        {
+                            // it's me, add estimatedBoxenstopdelta
+                            me = new StandingsDriver(currPos, RaceData.EstimatedBoxenstopDelta, Utilities.byteToString(driver.DriverInfo.Name));
+                        }
+                        else
+                        {
+                            RaceData.EstimatedStandings.Add(new StandingsDriver(currPos, 0, Utilities.byteToString(driver.DriverInfo.Name)));
+                        }
+                    }
+                    else
+                    {
+                        
+                        // diff to car in front
+                        var timeDeltaFront = driver.TimeDeltaFront;
+                        deltaToLeader += timeDeltaFront;
+                        if (me != null)
+                        {
+                            // add me, if i am before the next guy
+                            if (me.Delta < deltaToLeader)
+                            {
+                                me.Pos = currPos;
+                                RaceData.EstimatedStandings.Add(me);
+                                log.Debug("Calculated pos: " + currPos);
+                                me = null;
+                            }
+                        }
+
+                        if (i + 1 == ActualData.Position)
+                        {
+                            // it's me, add estimatedBoxenstopdelta
+                            me = new StandingsDriver(currPos, deltaToLeader + RaceData.EstimatedBoxenstopDelta, Utilities.byteToString(driver.DriverInfo.Name));
+                        }
+                        else
+                        {
+                            this.RaceData.EstimatedStandings.Add(new StandingsDriver(currPos, deltaToLeader, Utilities.byteToString(driver.DriverInfo.Name)));
+                        }
+                    }
+                }
+
+                if (me != null)
+                {
+                    // last
+                    me.Pos = ActualShared.NumCars;
+                    RaceData.EstimatedStandings.Add(me);
+                    log.Debug("last");
                 }
             }
         }

@@ -89,6 +89,7 @@
     <Compile Include="Model\QualyData.cs" />
     <Compile Include="Model\RaceData.cs" />
     <Compile Include="Model\SessionInfo.cs" />
+    <Compile Include="Model\StandingsDriver.cs" />
     <Compile Include="Model\Tires.cs" />
     <Compile Include="R3E\R3E.cs" />
     <Compile Include="R3E\R3EDriver.cs" />

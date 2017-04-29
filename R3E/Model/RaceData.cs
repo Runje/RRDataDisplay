@@ -45,6 +45,11 @@ namespace R3E.Model
         public Single EstimatedBoxenstopDelta { get; set; }
 
         /// <summary>
+        /// Estimated standings after boxenstop.
+        /// </summary>
+        public List<StandingsDriver> EstimatedStandings { get; set; }
+
+        /// <summary>
         /// Last Boxenstop delta in seconds.
         /// </summary>
         public Single LastBoxenstopDelta { get; set; }
@@ -59,6 +64,7 @@ namespace R3E.Model
             EstimatedRaceLaps = DisplayData.INVALID_INT;
             EstimatedBoxenstopDelta = DisplayData.INVALID_POSITIVE;
             LastBoxenstopDelta = DisplayData.INVALID_POSITIVE;
+            EstimatedStandings = new List<StandingsDriver>();
         }
 
         public override void Write(BinaryWriter writer)
@@ -72,11 +78,22 @@ namespace R3E.Model
             writer.Write(EstimatedRaceLaps);
             writer.Write(EstimatedBoxenstopDelta);
             writer.Write(LastBoxenstopDelta);
+            writer.Write(EstimatedStandings.Count);
+            foreach (var driver in EstimatedStandings)
+            {
+                driver.Write(writer);
+            }
         }
 
         public override int Length()
         {
-            return base.Length() + 2 * 8 + 2 * Lap.Length + 8 + 4 + 2 * 8;
+            int EstimatedStandingsLength = 0;
+            foreach (var driver in EstimatedStandings)
+            {
+                EstimatedStandingsLength += driver.Length;
+            }
+
+            return base.Length() + 2 * 8 + 2 * Lap.Length + 8 + 4 + 2 * 8 + 4 + EstimatedStandingsLength;
         }
     }
 }
