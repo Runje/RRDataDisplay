@@ -35,6 +35,7 @@ namespace R3E.Model
             model.OnLapCompleted += onLapCompleted;
             model.OnNewSession += onNewSession;
             model.OnBoxenstopDelta += onBoxenstopDelta;
+            model.OnTrackUpdate += onTrackUpdate;
             memoryReader = new R3EMemoryReader(config.PollInterval);
             r3eServer = new R3EServer(config.Port, config.IP);
             memoryReader.onRead += onRead;
@@ -46,6 +47,14 @@ namespace R3E.Model
             new Thread(() => memoryReader.Run()).Start();
             timer = new Timer(sendMessage, null, 0, config.SendInterval);
             view.UpdateConfig(config);
+        }
+
+        private void onTrackUpdate(object sender, Track track)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                database.UpdateTrack(track);
+            });
         }
 
         private void onBoxenstopDelta(object sender, BoxenstopDelta delta)
@@ -69,14 +78,24 @@ namespace R3E.Model
                 if (sessionInfo.Session == 2)
                 {
                     // RACE
-                    float delta = database.GetBoxenstopDelta(sessionInfo.Track, sessionInfo.Layout, sessionInfo.CarId);
+                    float delta = database.GetBoxenstopDelta(sessionInfo.Track, sessionInfo.Layout, sessionInfo.Car);
                     if (delta != DisplayData.INVALID_POSITIVE)
                     {
                         model.SetBoxenstopDelta(delta);
                     }
 
+                    
+
                     // TODO: load TB, tire and fuel usage
                 }
+
+                // load sector limits
+                Track track = database.GetTrack(sessionInfo.Track, sessionInfo.Layout);
+                model.SetLimits(track);
+
+                ///testc CODE
+                List<Track> tracks = database.GetAllTracks();
+
             });
         }
 
@@ -109,7 +128,10 @@ namespace R3E.Model
 
         private void sendMessage(object state)
         {
-            r3eServer.SendMessage(model.ActualData);
+            lock (model.DataLock)
+            {
+                r3eServer.SendMessage(model.ActualData);
+            }
         }
 
         public void Stop()
@@ -135,9 +157,12 @@ namespace R3E.Model
             try
             {
                 model.UpdateFromR3E(shared);
-                r3eServer.SendMessage(model.ActualData);
+                //r3eServer.SendMessage(model.ActualData);
                 view.ShowSharedData(shared);
-                view.ShowDisplayData(model.ActualData);
+                lock (model.DataLock)
+                {
+                    view.ShowDisplayData(model.ActualData);
+                }
             }
             catch (Exception e)
             {

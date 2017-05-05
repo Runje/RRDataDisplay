@@ -25,6 +25,11 @@ namespace R3E.Model
         public const float INVALID_POSITIVE = -1;
 
         /// <summary>
+        /// Driver Name.
+        /// </summary>
+        public String Name { get; set; }
+
+        /// <summary>
         /// Position( 1 == first place) of player.
         /// </summary>
         public int Position { get; set; }
@@ -160,11 +165,10 @@ namespace R3E.Model
             CurrentTime = INVALID_POSITIVE;
             CurrentLap = new Lap();
             CurrentLapCompleted = new bool[] { false, false, false, false };
-            CurrentLapValid = new bool[] { false, false, false, false };
+            CurrentLapValid = new bool[] { true, true, true, true };
             PreviousLap = new Lap();
             PBLap = new Lap();
             TBLap = new Lap();
-            PreviousLap = new Lap();
             FastestLap = new Lap();
             FuelRemainingLaps = INVALID_INT;
             TiresWear = new Tires();
@@ -214,11 +218,12 @@ namespace R3E.Model
             writer.Write(Utilities.stringToBytes(Track));
             writer.Write(Utilities.stringToBytes(Layout));
             writer.Write(LapDistanceFraction);
+            writer.Write(Utilities.stringToBytes(Name));
         }
 
         public virtual int Length()
         {
-            return 4 + 8 + 5 * Lap.Length + CurrentLapCompleted.Length + 4 + 3 * 8 + 4 + CompletedLaps.Count * Lap.Length + 4 + 3 * Tires.Length + 8 + Track.Length + 1 + Layout.Length + 1 + 4;
+            return 4 + 8 + 5 * Lap.Length + CurrentLapCompleted.Length + 4 + 3 * 8 + 4 + CompletedLaps.Count * Lap.Length + 4 + 3 * Tires.Length + 8 + Track.Length + 1 + Layout.Length + 1 + 4 + Name.Length + 1;
         }
     }
 }

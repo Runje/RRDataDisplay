@@ -12,42 +12,137 @@ namespace R3E.Database
 {
     public class R3EDatabase
     {
+        private object databaseLock = new object();
         public R3EDatabase()
         {
-            var schemaUpdate = new SchemaUpdate(NHibernateHelper.Configuration);
-            schemaUpdate.Execute(false, true);
+            lock (databaseLock)
+            {
+                var schemaUpdate = new SchemaUpdate(NHibernateHelper.Configuration);
+                schemaUpdate.Execute(false, true);
+            }
         }
 
-        public void SaveBoxenstopDelta(float delta, String Track, String Layout, int fuel, bool front, bool rear, int carId)
+        public void SaveBoxenstopDelta(float delta, String Track, String Layout, int fuel, bool front, bool rear, Car car)
         {
-            var bDelta = new BoxenstopDelta(Track, Layout, delta, fuel, front, rear, carId);
+            var bDelta = new BoxenstopDelta(Track, Layout, delta, fuel, front, rear, car);
             SaveBoxenstopDelta(bDelta);
         }
 
         public void SaveBoxenstopDelta(BoxenstopDelta bDelta)
         {
-            using (ISession session = NHibernateHelper.OpenSession())
-            using (ITransaction transaction = session.BeginTransaction())
+            lock (databaseLock)
             {
-                session.Save(bDelta);
-                transaction.Commit();
+                using (ISession session = NHibernateHelper.OpenSession())
+                {
+                    using (ITransaction transaction = session.BeginTransaction())
+                    {
+                        BoxenstopDelta databaseDelta = GetBDelta(session, bDelta);
+                        if (databaseDelta == null)
+                        {
+                            session.Save(bDelta);
+                        }
+                        else
+                        {
+                            // overwrite old delta
+                            databaseDelta.Delta = bDelta.Delta;
+                            session.Update(databaseDelta);
+                        }
+
+                        transaction.Commit();
+                    }
+                }
             }
         }
 
-        public float GetBoxenstopDelta(string track, string layout, int carId)
+        private ICriteria BoxenstopCriteria(ISession session, string track, string layout, Car car)
         {
-            using (ISession session = NHibernateHelper.OpenSession())
+            return session.CreateCriteria(typeof(BoxenstopDelta)).Add(Restrictions.Eq("Track", track) & Restrictions.Eq("Layout", layout) & Restrictions.Eq("CarClass", car.Class) & Restrictions.Eq("CarModel", car.Model));
+        }
+
+        private BoxenstopDelta GetBDelta(ISession session, BoxenstopDelta bDelta)
+        {
+            var fromDb = BoxenstopCriteria(session, bDelta.Track, bDelta.Layout, bDelta.Car).List<BoxenstopDelta>();
+
+            if (fromDb.Count > 0)
             {
-                var fromDb = session.CreateCriteria(typeof(BoxenstopDelta)).Add(Restrictions.Eq("Track", track) & Restrictions.Eq("Layout", layout) & Restrictions.Eq("CarId", carId))
-                    .List<BoxenstopDelta>();
-                    
-                if (fromDb.Count > 0)
-                {
-                    return fromDb[0].Delta;
-                }
+                // take the newest entry
+                return fromDb[fromDb.Count - 1];
             }
 
-            return DisplayData.INVALID_POSITIVE;
+            return null;
+        }
+
+        internal void UpdateTrack(Track track)
+        {
+            lock (databaseLock)
+            {
+                using (ISession session = NHibernateHelper.OpenSession())
+                {
+                    using (ITransaction transaction = session.BeginTransaction())
+                    {
+                        Track trackFromDB = getTrack(session, track.Name, track.Layout);
+                        if (trackFromDB == null)
+                        {
+                            session.Save(track);
+                        }
+                        else
+                        {
+                            // overwrite old delta
+                            trackFromDB.FirstSector = track.FirstSector;
+                            trackFromDB.SecondSector = track.SecondSector;
+                            session.Update(trackFromDB);
+                        }
+
+                        transaction.Commit();
+                    }
+                }
+            }
+        }
+
+        public float GetBoxenstopDelta(string track, string layout, Car car)
+        {
+            lock (databaseLock)
+            {
+                using (ISession session = NHibernateHelper.OpenSession())
+                {
+                    var fromDb = BoxenstopCriteria(session, track, layout, car).List<BoxenstopDelta>();
+
+                    if (fromDb.Count > 0)
+                    {
+                        // take the newest entry
+                        return fromDb[fromDb.Count - 1].Delta;
+                    }
+                }
+
+                return DisplayData.INVALID_POSITIVE;
+            }
+        }
+
+        internal List<Track> GetAllTracks()
+        {
+            lock (databaseLock)
+            {
+                using (ISession session = NHibernateHelper.OpenSession())
+                {
+                    return session.QueryOver<Track>().List<Track>().ToList<Track>();
+                }
+            }
+        }
+
+        public Track GetTrack(string track, string layout)
+        {
+            lock (databaseLock)
+            {
+                using (ISession session = NHibernateHelper.OpenSession())
+                {
+                    return getTrack(session, track, layout);
+                }
+            }
+        }
+
+        private Track getTrack(ISession session, string track, string layout)
+        {
+            return session.CreateCriteria(typeof(Track)).Add(Restrictions.Eq("Name", track) & Restrictions.Eq("Layout", layout)).UniqueResult<Track>();
         }
     }
 }

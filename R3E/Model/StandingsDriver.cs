@@ -20,7 +20,7 @@ namespace R3E.Model
         {
             writer.Write(Pos);
             writer.Write(Delta);
-            Utilities.stringToBytes(Name);
+            writer.Write(Utilities.stringToBytes(Name));
         }
     }
 }

@@ -19,7 +19,8 @@ namespace R3E.Database
             Property(x => x.Layout);
             Property(x => x.Track);
             Property(x => x.Refill);
-            Property(x => x.CarId);
+            Property(x => x.CarClass);
+            Property(x => x.CarModel);
         }
     }
 }

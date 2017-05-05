@@ -28,12 +28,12 @@ namespace R3ETests
         [TestMethod]
         public void SaveBoxenstopDelta()
         {
-            Database.SaveBoxenstopDelta(27.3f, "Monza", "Grand Prix", 1, true, true, 1);
-            float delta = Database.GetBoxenstopDelta("Monza", "Grand Prix", 1);
+            Database.SaveBoxenstopDelta(27.3f, "Monza", "Grand Prix", 1, true, true, new Car(1,2));
+            float delta = Database.GetBoxenstopDelta("Monza", "Grand Prix", new Car(1,2));
 
             Assert.AreEqual(27.3f, delta);
 
-            delta = Database.GetBoxenstopDelta("Suzuka", "Grand Prix", 1);
+            delta = Database.GetBoxenstopDelta("Suzuka", "Grand Prix", new Car(1, 2));
             Assert.AreEqual(DisplayData.INVALID, delta);
         }
     }

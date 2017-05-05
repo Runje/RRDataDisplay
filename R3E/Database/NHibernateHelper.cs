@@ -102,6 +102,7 @@ namespace R3E.Database
             //Add the person mapping to the model mapper
             mapper.AddMappings(new List<System.Type> { typeof(TBMapper) });
             mapper.AddMappings(new List<System.Type> { typeof(BoxenstopDeltaMapper) });
+            mapper.AddMappings(new List<System.Type> { typeof(TrackMapper) });
             //Create and return a HbmMapping of the model mapping in code
             return mapper.CompileMappingForAllExplicitlyAddedEntities();
         }

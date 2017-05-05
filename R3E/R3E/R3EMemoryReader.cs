@@ -180,6 +180,7 @@ namespace R3E
                     if (lastShared[index] == null)
                     {
                         number--;
+                        startIndex++;
                     }
                     else
                     {

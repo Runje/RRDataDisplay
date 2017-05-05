@@ -75,11 +75,14 @@
       <DependentUpon>Dashboard.xaml</DependentUpon>
     </Compile>
     <Compile Include="Database\BoxenstopDelta.cs" />
+    <Compile Include="Database\TrackMapper.cs" />
     <Compile Include="Database\BoxenstopDeltaMapper.cs" />
+    <Compile Include="Database\Car.cs" />
     <Compile Include="Database\NHibernateHelper.cs" />
     <Compile Include="Database\R3EDatabase.cs" />
     <Compile Include="Database\TB.cs" />
     <Compile Include="Database\TBMapper.cs" />
+    <Compile Include="Database\Track.cs" />
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\DisplayData.cs" />
     <Compile Include="Model\DataModel.cs" />

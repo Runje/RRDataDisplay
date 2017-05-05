@@ -69,6 +69,13 @@ namespace R3E.Model
             RelSector3 = reader.ReadSingle();
         }
 
+        public Lap(Lap lap)
+        {
+            Sector1 = lap.Sector1;
+            RelSector2 = lap.RelSector2;
+            RelSector3 = lap.RelSector3;
+        }
+
         internal void SetRelSector(int i, float sec)
         {
             if (i == 0)

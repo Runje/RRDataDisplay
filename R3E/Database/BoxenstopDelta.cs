@@ -15,14 +15,17 @@ namespace R3E.Database
         public virtual int Refill { get; set; }
         public virtual bool FrontTires { get; set; }
         public virtual bool RearTires { get; set; }
-        public virtual int CarId { get; set; }
+        public virtual Car Car { get; set; }
+        public virtual int CarClass { get { return Car.Class; } set { Car.Class = value; } }
+        public virtual int CarModel { get { return Car.Model; } set { Car.Model = value; } }
+        
 
         public BoxenstopDelta()
         {
-
+            Car = new Database.Car(-1, -1);
         }
 
-        public BoxenstopDelta(string track, string layout, float delta, int refill, bool frontTires, bool rearTires, int carId)
+        public BoxenstopDelta(string track, string layout, float delta, int refill, bool frontTires, bool rearTires, Car car)
         {
             this.Track = track;
             this.Layout = layout;
@@ -30,7 +33,7 @@ namespace R3E.Database
             this.Refill = refill;
             this.FrontTires = frontTires;
             this.RearTires = rearTires;
-            this.CarId = carId;
+            this.Car = car;
         }
 
     }
