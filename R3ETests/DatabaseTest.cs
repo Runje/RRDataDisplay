@@ -28,7 +28,7 @@ namespace R3ETests
         [TestMethod]
         public void SaveBoxenstopDelta()
         {
-            Database.SaveBoxenstopDelta(27.3f, "Monza", "Grand Prix", 1, true, true, new Car(1,2));
+            Database.SaveBoxenstopDelta(27.3f, "Monza", "Grand Prix", 1, true, true, new Car(1,2), 10f);
             float delta = Database.GetBoxenstopDelta("Monza", "Grand Prix", new Car(1,2));
 
             Assert.AreEqual(27.3f, delta);

@@ -49,7 +49,7 @@ namespace R3E.Model
             view.UpdateConfig(config);
         }
 
-        private void onTrackUpdate(object sender, Track track)
+        private void onTrackUpdate(object sender, TrackLimits track)
         {
             Task.Factory.StartNew(() =>
             {
@@ -61,7 +61,7 @@ namespace R3E.Model
         {
             if (memoryReader.playing)
             {
-                return;
+                //return;
             }
 
             Task.Factory.StartNew(() =>
@@ -90,11 +90,11 @@ namespace R3E.Model
                 }
 
                 // load sector limits
-                Track track = database.GetTrack(sessionInfo.Track, sessionInfo.Layout);
+                TrackLimits track = database.GetTrack(sessionInfo.Track, sessionInfo.Layout);
                 model.SetLimits(track);
 
                 ///testc CODE
-                List<Track> tracks = database.GetAllTracks();
+                List<TrackLimits> tracks = database.GetAllTracks();
 
             });
         }
@@ -114,7 +114,7 @@ namespace R3E.Model
         {
             if (!memoryReader.playing && lap.LapTime > 0)
             {
-                byte[] bytes = memoryReader.LastMs((int)(lap.LapTime * 1000 + 2000));
+                byte[] bytes = memoryReader.LastMs((int)(lap.LapTime * 1000 + 5000));
 
                 string dir = System.IO.Path.Combine(lap.Track, lap.Start.ToString("yy_MM_dd_HH_mm"));
                 Directory.CreateDirectory(dir);
@@ -191,14 +191,19 @@ namespace R3E.Model
 
         internal void PlayFiles(string[] fileNames)
         {
-            // TODO: more than one files, because of new thread!
+            Task.Factory.StartNew(() =>
+            {
+                // TODO: more than one files, because of new thread!
                 foreach (var file in fileNames)
                 {
+                    memoryReader.Pause();
                     model.ResetAll();
-                    
+
                     byte[] bytes = File.ReadAllBytes(file);
                     memoryReader.Play(bytes);
                 }
+            });
+            
 
         }
 
@@ -225,6 +230,7 @@ namespace R3E.Model
 
         internal void GoToLiveMode()
         {
+            model.ResetAll();
             memoryReader.GoToLiveMode();
         }
     }

@@ -44,6 +44,7 @@ namespace R3E
         private Shared _lastData;
         private Thread playingThread;
         private bool abort;
+        private bool AllFilled;
 
         public R3EMemoryReader(int interval)
         {
@@ -136,6 +137,10 @@ namespace R3E
                     {
                         lastShared[indexLastShared] = _buffer;
                         indexLastShared = (indexLastShared + 1) % MaxLastShared;
+                        if (indexLastShared == 0)
+                        {
+                            AllFilled = true;
+                        }
                     }
                 }
                 onRead?.Invoke(this, _data);
@@ -170,8 +175,13 @@ namespace R3E
         {
             lock (sharedLock)
             {
-                short number = (short)Math.Min(ms / TimeInterval.TotalMilliseconds, lastShared.Length);
-                int startIndex = (indexLastShared - number + 1 + MaxLastShared) % MaxLastShared;
+                short number = (short)Math.Min(ms / TimeInterval.TotalMilliseconds, indexLastShared);
+                if (!AllFilled && number > indexLastShared)
+                {
+                    number = (short) indexLastShared;
+                }
+
+                int startIndex = (indexLastShared - number + MaxLastShared) % MaxLastShared;
 
                 // check if some at the start are NULL
                 int index = startIndex;

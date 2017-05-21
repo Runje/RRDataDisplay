@@ -57,7 +57,7 @@ namespace R3E.Model
         /// <summary>
         /// Standing Time of last boxenstop
         /// </summary>
-        public double LastStandingTime { get; set; }
+        public float LastStandingTime { get; set; }
 
         public RaceData() : base()
         {

@@ -14,6 +14,7 @@ namespace R3E.Database
         {
             Id(x => x.Id, m => m.Generator(Generators.GuidComb));
             Property(x => x.Delta);
+            Property(x => x.StandingTime);
             Property(x => x.FrontTires);
             Property(x => x.RearTires);
             Property(x => x.Layout);

@@ -12,6 +12,7 @@ namespace R3E.Database
         public virtual String Track { get; set; }
         public virtual String Layout { get; set; }
         public virtual float Delta { get; set; }
+        public virtual float StandingTime { get; set; }
         public virtual int Refill { get; set; }
         public virtual bool FrontTires { get; set; }
         public virtual bool RearTires { get; set; }
@@ -25,7 +26,7 @@ namespace R3E.Database
             Car = new Database.Car(-1, -1);
         }
 
-        public BoxenstopDelta(string track, string layout, float delta, int refill, bool frontTires, bool rearTires, Car car)
+        public BoxenstopDelta(string track, string layout, float delta, int refill, bool frontTires, bool rearTires, Car car, float standingTime)
         {
             this.Track = track;
             this.Layout = layout;
@@ -34,6 +35,7 @@ namespace R3E.Database
             this.FrontTires = frontTires;
             this.RearTires = rearTires;
             this.Car = car;
+            this.StandingTime = standingTime;
         }
 
     }

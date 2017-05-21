@@ -162,7 +162,7 @@ namespace R3E.Model
         public DisplayData()
         {
             Position = INVALID_INT;
-            CurrentTime = INVALID_POSITIVE;
+            CurrentTime = INVALID;
             CurrentLap = new Lap();
             CurrentLapCompleted = new bool[] { false, false, false, false };
             CurrentLapValid = new bool[] { true, true, true, true };

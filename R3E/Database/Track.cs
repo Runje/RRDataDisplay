@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace R3E.Database
 {
-    public class Track
+    public class TrackLimits
     {
         public virtual Guid Id { get; set; }
         public virtual String Name { get; set; }
@@ -14,16 +14,22 @@ namespace R3E.Database
         public virtual float FirstSector { get; set; }
         public virtual float SecondSector { get; set; }
 
-        public Track()
+        public virtual float FirstSectorError { get; set; }
+        public virtual float SecondSectorError { get; set; }
+
+
+        public TrackLimits()
         {
 
         }
-        public Track(string name, string layout, float firstSector, float secondSector)
+        public TrackLimits(string name, string layout, float firstSector, float secondSector, float firstError, float secondError)
         {
             this.Name = name;
             this.Layout = layout;
             this.FirstSector = firstSector;
             this.SecondSector = secondSector;
+            this.FirstSectorError = firstError;
+            this.SecondSectorError = secondError;
         }
 
         

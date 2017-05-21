@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace R3E.Database
 {
-    public class TrackMapper : ClassMapping<Track>
+    public class TrackMapper : ClassMapping<TrackLimits>
     {
         public TrackMapper()
         {
@@ -17,6 +17,8 @@ namespace R3E.Database
             Property(x => x.Layout);
             Property(x => x.FirstSector);
             Property(x => x.SecondSector);
+            Property(x => x.FirstSectorError);
+            Property(x => x.SecondSectorError);
         }
     }
 }

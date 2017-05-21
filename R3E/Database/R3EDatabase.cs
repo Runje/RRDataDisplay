@@ -22,9 +22,9 @@ namespace R3E.Database
             }
         }
 
-        public void SaveBoxenstopDelta(float delta, String Track, String Layout, int fuel, bool front, bool rear, Car car)
+        public void SaveBoxenstopDelta(float delta, String Track, String Layout, int fuel, bool front, bool rear, Car car, float standingTime)
         {
-            var bDelta = new BoxenstopDelta(Track, Layout, delta, fuel, front, rear, car);
+            var bDelta = new BoxenstopDelta(Track, Layout, delta, fuel, front, rear, car, standingTime);
             SaveBoxenstopDelta(bDelta);
         }
 
@@ -45,6 +45,10 @@ namespace R3E.Database
                         {
                             // overwrite old delta
                             databaseDelta.Delta = bDelta.Delta;
+                            databaseDelta.FrontTires = bDelta.FrontTires;
+                            databaseDelta.RearTires = bDelta.RearTires;
+                            databaseDelta.Refill = bDelta.Refill;
+                            databaseDelta.StandingTime = bDelta.StandingTime;
                             session.Update(databaseDelta);
                         }
 
@@ -72,7 +76,7 @@ namespace R3E.Database
             return null;
         }
 
-        internal void UpdateTrack(Track track)
+        internal void UpdateTrack(TrackLimits track)
         {
             lock (databaseLock)
             {
@@ -80,7 +84,7 @@ namespace R3E.Database
                 {
                     using (ITransaction transaction = session.BeginTransaction())
                     {
-                        Track trackFromDB = getTrack(session, track.Name, track.Layout);
+                        TrackLimits trackFromDB = getTrack(session, track.Name, track.Layout);
                         if (trackFromDB == null)
                         {
                             session.Save(track);
@@ -90,6 +94,8 @@ namespace R3E.Database
                             // overwrite old delta
                             trackFromDB.FirstSector = track.FirstSector;
                             trackFromDB.SecondSector = track.SecondSector;
+                            trackFromDB.FirstSectorError = track.FirstSectorError;
+                            trackFromDB.SecondSectorError = track.SecondSectorError;
                             session.Update(trackFromDB);
                         }
 
@@ -118,18 +124,18 @@ namespace R3E.Database
             }
         }
 
-        internal List<Track> GetAllTracks()
+        internal List<TrackLimits> GetAllTracks()
         {
             lock (databaseLock)
             {
                 using (ISession session = NHibernateHelper.OpenSession())
                 {
-                    return session.QueryOver<Track>().List<Track>().ToList<Track>();
+                    return session.QueryOver<TrackLimits>().List<TrackLimits>().ToList<TrackLimits>();
                 }
             }
         }
 
-        public Track GetTrack(string track, string layout)
+        public TrackLimits GetTrack(string track, string layout)
         {
             lock (databaseLock)
             {
@@ -140,9 +146,9 @@ namespace R3E.Database
             }
         }
 
-        private Track getTrack(ISession session, string track, string layout)
+        private TrackLimits getTrack(ISession session, string track, string layout)
         {
-            return session.CreateCriteria(typeof(Track)).Add(Restrictions.Eq("Name", track) & Restrictions.Eq("Layout", layout)).UniqueResult<Track>();
+            return session.CreateCriteria(typeof(TrackLimits)).Add(Restrictions.Eq("Name", track) & Restrictions.Eq("Layout", layout)).UniqueResult<TrackLimits>();
         }
     }
 }
