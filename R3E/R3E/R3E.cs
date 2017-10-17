@@ -16,7 +16,7 @@ namespace R3E
         public enum VersionMinor
         {
             // Minor version number to test against
-            R3E_VERSION_MINOR = 5
+            R3E_VERSION_MINOR = 7
         };
 
         public enum Session
@@ -24,7 +24,8 @@ namespace R3E
             Unavailable = -1,
             Practice = 0,
             Qualify = 1,
-            Race = 2
+            Race = 2,
+            Warmup = 3
         };
 
         public enum SessionLengthFormat
@@ -142,7 +143,17 @@ namespace R3E
             Option = 0,
             Prime = 1,
         };
-    }
+
+        enum TireSubtype
+        {
+            Unavailable = -1,
+            Primary = 0,
+            Alternate = 1,
+            Soft = 2,
+            Medium = 3,
+            Hard = 4
+        };
+}
 
     namespace Data
     {
@@ -417,8 +428,13 @@ namespace R3E
             public Int32 NumPitstops;
             public CutTrackPenalties Penalties;
             public Single CarSpeed;
-            // Note: See the R3E.Constant.TireType public enum
-            public Int32 TireType;
+            // Note: See the R3E.Constant.TireType public enum, deprecated - use the values further down instead
+            // Note: See the R3E.Constant.TireType enum
+            public Int32 TireTypeFront;
+            public Int32 TireTypeRear;
+            // Note: See the R3E.Constant.TireSubtype enum
+            public Int32 TireSubtypeFront;
+            public Int32 TireSubtypeRear;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -658,7 +674,7 @@ namespace R3E
             //////////////////////////////////////////////////////////////////////////
 
             // Which type of tires the player's car has (option, prime, etc.)
-            // Note: See the R3E.Constant.TireType public enum
+            // Note: See the R3E.Constant.TireType public enum, deprecated - use the values further down instead
             public Int32 TireType;
 
             // Rotation speed
@@ -682,6 +698,15 @@ namespace R3E
             // Unit: Celsius (C)
             // Note: Not valid for AI or remote players
             public TireTemperature TireTemp;
+
+            // Which type of tires the car has (option, prime, etc.)
+            // Note: See the R3E.Constant.TireType enum
+            public Int32 TireTypeFront;
+            public Int32 TireTypeRear;
+            // Which subtype of tires the car has
+            // Note: See the R3E.Constant.TireSubtype enum
+    		public Int32 TireSubtypeFront;
+            public Int32 TireSubtypeRear;
 
             //////////////////////////////////////////////////////////////////////////
             // Damage

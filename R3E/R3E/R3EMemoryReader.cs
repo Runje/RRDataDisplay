@@ -140,6 +140,14 @@ namespace R3E
                         if (indexLastShared == 0)
                         {
                             AllFilled = true;
+
+                            // save all
+                            byte[] bytes = LastMs(MaxStoreInSec * 1000);
+                            string dir = System.IO.Path.Combine("Sessions");
+                            Directory.CreateDirectory(dir);
+
+                            var filename = System.IO.Path.Combine(dir, DateTime.Now.ToString("yy_MM_dd_HH_mm"));
+                            File.WriteAllBytes(filename, bytes);
                         }
                     }
                 }
@@ -172,14 +180,22 @@ namespace R3E
         }
 
         public byte[] LastMs(int ms)
-        {
+         {
             lock (sharedLock)
             {
-                short number = (short)Math.Min(ms / TimeInterval.TotalMilliseconds, indexLastShared);
-                if (!AllFilled && number > indexLastShared)
+                short n = (short) (ms / TimeInterval.TotalMilliseconds);
+
+                short number;
+                if (!AllFilled)
                 {
-                    number = (short) indexLastShared;
+                    number = (short)Math.Min(n, indexLastShared);
                 }
+                else
+                {
+                    number = (short)Math.Min(n, MaxLastShared);
+                }
+
+                
 
                 int startIndex = (indexLastShared - number + MaxLastShared) % MaxLastShared;
 
@@ -288,6 +304,8 @@ namespace R3E
                 abort = true;
                 playingThread.Join();
             }
+
+            playing = false;
         }
 
         internal void Resume()

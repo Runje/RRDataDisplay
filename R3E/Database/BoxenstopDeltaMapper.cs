@@ -22,6 +22,8 @@ namespace R3E.Database
             Property(x => x.Refill);
             Property(x => x.CarClass);
             Property(x => x.CarModel);
+            Property(x => x.DriveThrough);
+            Property(x => x.StopAndGo);
         }
     }
 }

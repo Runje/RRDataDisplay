@@ -22,9 +22,9 @@ namespace R3E.Database
             }
         }
 
-        public void SaveBoxenstopDelta(float delta, String Track, String Layout, int fuel, bool front, bool rear, Car car, float standingTime)
+        public void SaveBoxenstopDelta(float delta, String Track, String Layout, int fuel, bool front, bool rear, Car car, float standingTime, bool stopAndGo, bool driveThrough)
         {
-            var bDelta = new BoxenstopDelta(Track, Layout, delta, fuel, front, rear, car, standingTime);
+            var bDelta = new BoxenstopDelta(Track, Layout, delta, fuel, front, rear, car, standingTime,stopAndGo, driveThrough);
             SaveBoxenstopDelta(bDelta);
         }
 

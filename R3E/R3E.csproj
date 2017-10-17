@@ -83,6 +83,7 @@
     <Compile Include="Database\TB.cs" />
     <Compile Include="Database\TBMapper.cs" />
     <Compile Include="Database\Track.cs" />
+    <Compile Include="Model\BoxenstopSuggestion.cs" />
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\DisplayData.cs" />
     <Compile Include="Model\DataModel.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Model\RaceData.cs" />
     <Compile Include="Model\SessionInfo.cs" />
     <Compile Include="Model\StandingsDriver.cs" />
+    <Compile Include="Model\StandingsDriverExtended.cs" />
     <Compile Include="Model\Tires.cs" />
     <Compile Include="R3E\R3E.cs" />
     <Compile Include="R3E\R3EDriver.cs" />

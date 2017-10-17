@@ -40,14 +40,19 @@ namespace R3E.Model
         public int EstimatedRaceLaps { get; set; }
 
         /// <summary>
-        /// Estimated boxenstop delta in seconds.
+        /// Boxenstop Suggestion.
         /// </summary>
-        public Single EstimatedBoxenstopDelta { get; set; }
+        public BoxenstopSuggestion BoxenstopSuggestion{ get; set; }
 
         /// <summary>
         /// Estimated standings after boxenstop.
         /// </summary>
         public List<StandingsDriver> EstimatedStandings { get; set; }
+
+        /// <summary>
+        /// Actual Race standings.
+        /// </summary>
+        public List<StandingsDriverExtended> RaceStandings { get; set; }
 
         /// <summary>
         /// Last Boxenstop delta in seconds.
@@ -59,6 +64,11 @@ namespace R3E.Model
         /// </summary>
         public float LastStandingTime { get; set; }
 
+        /// <summary>
+        /// Total amount of used fuel.
+        /// </summary>
+        public float FuelUsed { get; set; }
+
         public RaceData() : base()
         {
             DiffAhead = DisplayData.INVALID;
@@ -67,10 +77,12 @@ namespace R3E.Model
             DiffSectorsBehind = new Lap();
             FuelToRefill = DisplayData.INVALID_POSITIVE;
             EstimatedRaceLaps = DisplayData.INVALID_INT;
-            EstimatedBoxenstopDelta = DisplayData.INVALID_POSITIVE;
+            BoxenstopSuggestion = new BoxenstopSuggestion();
             LastBoxenstopDelta = DisplayData.INVALID_POSITIVE;
             EstimatedStandings = new List<StandingsDriver>();
+            RaceStandings = new List<StandingsDriverExtended>();
             LastStandingTime = DisplayData.INVALID_POSITIVE;
+            FuelUsed = DisplayData.INVALID_POSITIVE;
         }
 
         public override void Write(BinaryWriter writer)
@@ -82,7 +94,7 @@ namespace R3E.Model
             DiffSectorsBehind.Write(writer);
             writer.Write(FuelToRefill);
             writer.Write(EstimatedRaceLaps);
-            writer.Write(EstimatedBoxenstopDelta);
+            BoxenstopSuggestion.Write(writer);
             writer.Write(LastBoxenstopDelta);
             writer.Write(EstimatedStandings.Count);
             // TODO: estimated standings kann sich ändern, LOCK IT
@@ -91,7 +103,14 @@ namespace R3E.Model
                 driver.Write(writer);
             }
 
+            writer.Write(RaceStandings.Count);
+            foreach (var driver in RaceStandings)
+            {
+                driver.Write(writer);
+            }
+
             writer.Write(LastStandingTime);
+            writer.Write(FuelUsed);
         }
 
         public override int Length()
@@ -102,7 +121,7 @@ namespace R3E.Model
                 EstimatedStandingsLength += driver.Length;
             }
 
-            return base.Length() + 2 * 8 + 2 * Lap.Length + 8 + 4 + 2 * 8 + 4 + EstimatedStandingsLength + 8;
+            return base.Length() + 2 * 8 + 2 * Lap.Length + 8 + 4 + BoxenstopSuggestion.Length + 8 + 4 + EstimatedStandingsLength + 8 + 8;
         }
     }
 }

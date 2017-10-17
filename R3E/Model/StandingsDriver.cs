@@ -16,7 +16,7 @@ namespace R3E.Model
             this.Name = name;
         }
 
-        internal void Write(BinaryWriter writer)
+        public virtual void Write(BinaryWriter writer)
         {
             writer.Write(Pos);
             writer.Write(Delta);
